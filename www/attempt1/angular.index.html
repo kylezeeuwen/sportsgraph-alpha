@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html ng-app="sportGraph">
+  <head>
+    <meta charset="utf-8" />
+    <title>Sport Graph V1</title>
+
+    <link rel="stylesheet" href="/lib/js/jquery-ui/jquery-ui-1.10.3/themes/base/jquery.ui.slider.css" />
+    <link rel="stylesheet" href="/lib/js/jquery-ui/jquery-ui-1.10.3/themes/smoothness/jquery-ui.css" />
+
+    <script type="text/javascript" src="/lib/js/angular/angular-1.0.7.js"></script>
+    <script type="text/javascript" src="/lib/js/d3/d3.v3.min.js"></script>
+    <script type="text/javascript" src="/lib/js/jquery/jquery-1.10.1.js"></script>
+    <script src="/lib/js/jquery-ui/jquery-ui-1.10.3/ui/jquery-ui.js"></script>
+    <script type="text/javascript" src="/lib/js/topojson/topojson.v1.min.js"></script>
+    <script type="text/javascript" src="/lib/js/ba-debug/ba-debug.js"></script>
+  </head>
+  <style>
+
+  .graticule {
+    fill: none;
+    stroke: #777;
+    stroke-opacity: .5;
+    stroke-width: .5px;
+  }
+  
+  .land {
+    fill: #222;
+  }
+  
+  .boundary {
+    fill: none;
+    stroke: #fff;
+    stroke-width: .5px;
+  }
+
+  </style>
+  <body>
+    <league-slider/>
+        
+    <!-- classes -->
+    <script type="text/javascript" src="/js/sportgraph.js"></script>
+
+    <!-- angular -->
+    <script type="text/javascript" src="/js/app.js"></script>
+    <script type="text/javascript" src="/js/leagueDataService.js"></script>
+    <script type="text/javascript" src="/js/formController.js"></script>
+  </body>
+</html>
