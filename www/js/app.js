@@ -1,6 +1,7 @@
 angular.module('sportGraph', [
     'leagueDataService',
-    'leagueSlider'
+    'uiSlider',
+    'sportsGraphDirective'
 ]).run( function() {
 
 debug.debug("run in sportGraph called");

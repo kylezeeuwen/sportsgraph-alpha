@@ -6,13 +6,17 @@
 
     <link rel="stylesheet" href="/lib/js/jquery-ui/jquery-ui-1.10.3/themes/base/jquery.ui.slider.css" />
     <link rel="stylesheet" href="/lib/js/jquery-ui/jquery-ui-1.10.3/themes/smoothness/jquery-ui.css" />
+    <link rel="stylesheet" href="/lib/js/angular-slider/angular-slider.min.css" />
 
-    <script type="text/javascript" src="/lib/js/angular/angular-1.0.7.js"></script>
+    <script type="text/javascript" src="/lib/js/angular/angular-1.1.5.min.js"></script>
     <script type="text/javascript" src="/lib/js/d3/d3.v3.min.js"></script>
     <script type="text/javascript" src="/lib/js/jquery/jquery-1.10.1.js"></script>
     <script src="/lib/js/jquery-ui/jquery-ui-1.10.3/ui/jquery-ui.js"></script>
     <script type="text/javascript" src="/lib/js/topojson/topojson.v1.min.js"></script>
     <script type="text/javascript" src="/lib/js/ba-debug/ba-debug.js"></script>
+   
+    <script type="text/javascript" src="/lib/js/angular-slider/angular-slider.min.js"></script>
+
   </head>
   <style>
 
@@ -34,15 +38,18 @@
   }
 
   </style>
-  <body>
-    <league-slider/>
-        
+  <body ng-controller="outerController">
+    <h2>Current Year: {{currentYear}}</h2> 
+    
+    <slider id="slider" floor="{{minSeason}}" ceiling="{{maxSeason}}" step="1" precision="0" ng-model="currentYear"></slider>
+
+    <sportsgraph id="sportsgraph" current-year="currentYear" /> 
     <!-- classes -->
-    <script type="text/javascript" src="/js/sportgraph.js"></script>
 
     <!-- angular -->
     <script type="text/javascript" src="/js/app.js"></script>
     <script type="text/javascript" src="/js/leagueDataService.js"></script>
-    <script type="text/javascript" src="/js/formController.js"></script>
+    <script type="text/javascript" src="/js/outerController.js"></script>
+    <script type="text/javascript" src="/js/sportsGraphDirective.js"></script>
   </body>
 </html>

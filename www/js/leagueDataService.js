@@ -1,10 +1,10 @@
 angular.module('leagueDataService', []).factory('league', function ($http) {
-
     debug.debug("league Init called");
     
     var l = {
-        dataSource : '/data/league.js',
-        data : {}
+        dataSource : '/data/league.json',
+        data : {},
+        computed : {}
     };
 
    
@@ -27,13 +27,50 @@ angular.module('leagueDataService', []).factory('league', function ($http) {
         l.haveData(false);
         $http.get(l.dataSource)
              .success(function (data, status, headers, config) {
-            l.data = data;
+            l.leagueData = data;
             
             l.haveData(true);
             l.loadingData(false);
             
         });
     };
+
+    l.getMinSeason = function() {
+        if (!l.haveData()) {
+            return null;
+        }
+ 
+        if ('minSeason' in l.computed) {
+            return l.computed.minSeason;
+        }
+        var seasons = l.leagueData.seasons;
+        for (var i = 0; i < seasons.length; i++) {
+            if (!('minSeason' in l.computed) || l.computed.minSeason > seasons[i]) {
+                l.computed.minSeason = seasons[i];
+            }
+        }
+        
+        return l.computed.minSeason; 
+    }
+    
+    l.getMaxSeason = function() {
+        if (!l.haveData()) {
+            return null;
+        }
+ 
+        if ('maxSeason' in l.computed) {
+            return l.computed.maxSeason;
+        }
+        var seasons = l.leagueData.seasons;
+        for (var i = 0; i < seasons.length; i++) {
+            if (!('maxSeason' in l.computed) || l.computed.maxSeason < seasons[i]) {
+                l.computed.maxSeason = seasons[i];
+            }
+        }
+        
+        return l.computed.maxSeason; 
+    }
+
 
     l.loadLeagueData();
 
