@@ -35,6 +35,14 @@ angular.module('leagueDataService', []).factory('league', function ($http) {
         });
     };
 
+    l.getSeasons = function() {
+        if (!l.haveData()) {
+            return null;
+        }
+
+        return l.leagueData.seasons.sort();
+    }
+
     l.getMinSeason = function() {
         if (!l.haveData()) {
             return null;
@@ -71,6 +79,30 @@ angular.module('leagueDataService', []).factory('league', function ($http) {
         return l.computed.maxSeason; 
     }
 
+    l.getRoster = function(season) {
+        if (!l.haveData()) {
+            return null;
+        }
+        
+        return l.leagueData.roster[season]; 
+    }
+
+    l.getArenas = function() {
+        if (!l.haveData()) {
+            return null;
+        }
+        
+        return l.leagueData.arenas;
+    }
+
+    l.getArena = function(teamID, season) {
+        if (!l.haveData()) {
+            return null;
+        }
+
+        //XXX: Data model limition. Currently I only have one arena / team
+        return l.leagueData.arenas[teamID];
+    }
 
     l.loadLeagueData();
 
