@@ -7,39 +7,46 @@ angular.module("sportsGraphDirective", []).directive(
                 currentYear: '='
             },
             link : function(scope, iElement, iAttrs, controller) {
-                debug.debug("graph directive link called"); 
+                debug.debug("graph directive link called");
+                var me = scope;
 
-                //add methods to scope
-                initScope(scope,league);    
+                //add methods to me
+                initScope(me,league);    
 
-                scope.setupCanvas(iElement, scope.w, scope.h);
+                me.setupCanvas(iElement, me.w, me.h);
                 
                 //data should be delivered by a one directional binding with the outerController
-                scope.$watch(league.haveData, function (haveData) {
-                    scope.haveData = haveData;
+                me.$watch(league.haveData, function (haveData) {
+                    me.haveData = haveData;
                 });
                 
-                scope.$watch('haveData + haveMap', function (n) {
-                    debug.debug("graph haveData(" + scope.haveData + ") + haveMap(" + scope.haveMap + ") called");
-                    if (scope.haveData && scope.haveMap) {
-                        scope.start();
+                me.$watch('haveData + haveMap', function (n) {
+                    debug.debug("graph haveData(" + me.haveData + ") + haveMap(" + me.haveMap + ") called");
+                    if (me.haveData && me.haveMap) {
+                        me.assignArenaCoordinates();
+                        me.ready = true;
+                        me.doFirstSeason(me.currentYear);
                     }
                 });
 
-               //XXX: For now dont watch the slider, just control it
-               //scope.$watch('currentYear', function (newYear, oldYear) {
-               //    debug.debug("newYear " + newYear + " oldYear " + oldYear);
-               //   
-               //    if (!newYear || newYear == 'NaN') {
-               //        return;
-               //    }
-               //    if (!oldYear || oldYear == 'NaN') {
-               //        scope.doFirstSeason();
-               //    } 
-               //    else if (newYear != oldYear) {
-               //        scope.doTransitionSeason()
-               //    }
-               //});
+                me.$watch('currentYear', function (newYear, oldYear) {
+                    debug.debug(
+                        "newYear " + newYear + 
+                        " oldYear " + oldYear + 
+                        " ready " + me.ready + 
+                        " transitionInProgress " + me.transitionInProgress
+                    );
+                
+                    if (!me.ready || me.transitionInProgress || !newYear || newYear == 'NaN') {
+                        return;
+                    }
+                    else if (!oldYear || oldYear == 'NaN') {
+                        scope.doFirstSeason(newYear);
+                    } 
+                    else if (newYear != oldYear) {
+                        scope.doFirstSeason(newYear);
+                    }
+                });
             }
         };
         
@@ -54,8 +61,11 @@ initScope = function(scope,league) {
 
     me.w = 1024;
     me.h = 800;
+    me.speed = 0.75;
+    me.transitionCutoff = 0.96;
     me.fill = d3.scale.category20();
     me.activePlayers = [];
+    me.playerLastCoord = {};
 
     ///////////////////////////////////////////////////////////////////////////////
     // Init the svg canvas
@@ -77,6 +87,48 @@ initScope = function(scope,league) {
         
         me.path = d3.geo.path()
             .projection(me.projection);
+        
+        me.force = d3.layout.force()
+            .links([])
+            .gravity(0)
+            .size([me.w, me.h]);
+        
+        me.force.on("tick", function(e) {
+        
+            //debug.debug("in tick e.alpha is %s", e.alpha);
+        
+            var k = me.speed * e.alpha;
+            if (k > 1) { k = 1; }
+        
+            me.activePlayers.forEach(function(player, i) {
+        
+                var arenaInfo = me.arenas[player.arenaID];
+                var id = player.id;
+                me.playerLastCoord[id].x += (arenaInfo.cx - me.playerLastCoord[id].x) * k; 
+                me.playerLastCoord[id].y += (arenaInfo.cy - me.playerLastCoord[id].y) * k; 
+            });
+       
+            //XXX: write xy to playerLastCoord AND activeplayers, only retrieve on miss, save time 
+            me.svg.selectAll("circle.node")
+                .attr("cx", function(d) { return me.playerLastCoord[d.id].x; })
+                .attr("cy", function(d) { return me.playerLastCoord[d.id].y; })
+        
+            if (e.alpha < (1 - me.transitionCutoff)) {
+                debug.debug("force.stop" +
+                    " seasonOver " + me.currentYear +
+                    " entered " + me.counts.enter +
+                    " updated " + me.counts.update +
+                    " exited " + me.counts.exit
+                );
+                me.force.stop();
+                me.transitionInProgress = false;
+                var nextSeason = league.getNextSeason(me.currentYear);
+                if (nextSeason) { 
+                    me.currentYear = nextSeason;
+                    me.$apply();
+                }
+            }
+        });
         
         $.ajax({
             url: "/data/world-50m.json",
@@ -105,53 +157,6 @@ initScope = function(scope,league) {
                     
     };
     
-    me.start = function() {
-        debug.debug("graph Start called");
-
-        me.force = d3.layout.force()
-            .links([])
-            .gravity(0)
-            .size([me.w, me.h]);
-        
-        me.force.on("tick", function(e) {
-        
-            debug.debug("in tick e.alpha is %s", e.alpha);
-        
-            var k = 1.5 * e.alpha;
-            if (k > 1) { k = 1; }
-        
-            me.activePlayers.forEach(function(player, i) {
-        
-                var arenaInfo = me.arenas[player.arenaID];
-        
-                player.x += (arenaInfo.cx - player.x) * k; 
-                player.y += (arenaInfo.cy - player.y) * k; 
-            });
-        
-            me.svg.selectAll("circle.node")
-                .attr("cx", function(d) { return d.x; })
-                .attr("cy", function(d) { return d.y; });
-        
-            if (e.alpha < 0.075) {
-                debug.debug("force.stop");
-                me.force.stop();
-            }
-        });
-
-        me.assignArenaCoordinates();
-
-        var seasons = league.getSeasons();
-        for (var i = 0; i < seasons.length; i++) {
-    
-            if (i == 0) {
-                scope.doFirstSeason(seasons[i]);
-            }
-            else {
-                scope.doTransitionSeason(seasons[i-1],seasons[i]);
-            }
-        }
-    }
-    
     me.assignArenaCoordinates = function() { 
         me.arenas = league.getArenas();
         for (var arenaID in me.arenas) {
@@ -164,7 +169,7 @@ initScope = function(scope,league) {
     }
 
     me.doFirstSeason = function(curSeason) {
-        debug.debug("Do firstSeason");
+        debug.debug("Do firstSeason " + curSeason);
 
         me.activePlayers = [];
         var roster = league.getRoster(curSeason);
@@ -173,31 +178,50 @@ initScope = function(scope,league) {
                 var player = {
                     'id' : roster[teamID][i],
                     'fill' : me.arenas[teamID].fill,
-                    'x' : Math.random() * me.w,
-                    'y' : Math.random() * me.h,
                     'teamID'  : teamID,
                     'arenaID' : teamID //XXX: this should be a function of the season and the team
-                }; 
+                };
+
+                if (!(player.id in me.playerLastCoord)) {
+                    me.playerLastCoord[player.id] = {
+                        'x' : Math.random() * me.w,
+                        'y' : Math.random() * me.h
+                    };
+                };
+
                 me.activePlayers.push(player);
             }
         }
-        me.force.start();
 
-        me.svg.selectAll("circle.node")
-            .data(me.activePlayers)
-            .enter().append("svg:circle")
+        me.counts = {
+            "enter"  : 0,
+            "update" : 0,
+            "exit"   : 0
+        };
+
+        me.force.start();
+        me.transitionInProgress = true;
+
+        var node = me.svg.selectAll("circle.node")
+            .data(me.activePlayers, function (d) { return d.id });
+
+        node.enter().append("svg:circle")
               .attr("class", "node")
-              .attr("cx", function(d) { return d.x; })
-              .attr("cy", function(d) { return d.y; })
+              .attr("debug", function(d) { me.counts.enter++; })
+              .attr("cx", function(d) { return me.playerLastCoord[d.id].x; })
+              .attr("cy", function(d) { return me.playerLastCoord[d.id].y; })
               .attr("r", 5)
               .style("fill", function(d) { return d.fill; })
               .style("stroke", function(d) { return d3.rgb(d.fill).darker(2); })
               .style("stroke-width", 1.5)
               .call(me.force.drag);
-
-    };
     
-    me.doTransitionSeason = function(prevSeason, curSeason) {
-        debug.debug("Do transition");
+        node.transition().select("circle")
+              .attr("debug", function(d) { me.counts.update++; });
+            
+        node.exit().select("circle")
+              .attr("debug", function(d) { me.counts.remove++; });
+    
+        node.exit().remove();
     };
 };

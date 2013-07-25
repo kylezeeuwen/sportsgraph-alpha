@@ -43,6 +43,22 @@ angular.module('leagueDataService', []).factory('league', function ($http) {
         return l.leagueData.seasons.sort();
     }
 
+    l.getNextSeason = function(curSeason) {
+        var seasons = l.getSeasons();
+        //for (var i = 0; i < seasons.length; i++) {
+        for (var i = 0; i < 4; i++) {
+            if (seasons[i] == curSeason) {
+                if (i + 1 < seasons.length) {
+                    return seasons[i + 1];
+                }
+                else {
+                    return null;
+                }
+            }
+        }
+        return null;
+    }
+
     l.getMinSeason = function() {
         if (!l.haveData()) {
             return null;

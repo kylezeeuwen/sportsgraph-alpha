@@ -42,6 +42,7 @@
     <h2>Current Year: {{currentYear}}</h2> 
     
     <slider id="slider" floor="{{minSeason}}" ceiling="{{maxSeason}}" step="1" precision="0" ng-model="currentYear"></slider>
+    <button id="stop-button" type="submit" class="btn btn-primary" ng-click="toggleStop()">
 
     <sportsgraph id="sportsgraph" current-year="currentYear" /> 
     <!-- classes -->

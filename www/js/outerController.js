@@ -3,9 +3,19 @@ function outerController($scope, league) {
 
     $scope.available = false;
     $scope.haveData = false;
+    $scope.stop = false;
+
+    $scope.toggleStop = function() {
+        if ($scope.stop) { $scope.stop = false; }
+        else { $scope.stop = true; }
+        debug.debug("In outerController toggleStop newValue: " + $scope.stop);
+    }
+
+    $scope.$watch('stop', function(newValue) {
+    });
 
     $scope.$watch(league.haveData, function(haveData) {
-        debug.debug("In outerController watch haveData");
+        debug.debug("In outerController watch haveData:" + haveData);
         if (haveData) {
 
             $scope.minSeason = parseInt(league.getMinSeason());
