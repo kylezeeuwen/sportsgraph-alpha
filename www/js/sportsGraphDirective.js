@@ -10,7 +10,7 @@ angular.module("sportsGraphDirective", []).directive(
                 debug.debug("graph directive link called");
                 var me = scope;
                 me.trackThesePlayers = {
-                   // 1 : 1
+                   1015 : 1
                 };
 
                 //add methods to me
@@ -91,6 +91,7 @@ initScope = function(scope,league) {
             .projection(me.projection);
         
         me.force = d3.layout.force()
+            .nodes(me.activePlayers)     
             .links([])
             .gravity(0)
             .size([me.w, me.h]);
@@ -122,13 +123,13 @@ initScope = function(scope,league) {
                 if (id in me.trackThesePlayers) {
                     debug.debug(
                         "Tracked player " + id + 
-                        "Arena ID " + player.arenaID + 
+                        " Team ID " + player.teamID + 
                         " at " + 
-                        "x: " + Math.round(me.playerLastCoord[id].x) + 
-                        "y: " + Math.round(me.playerLastCoord[id].y) + 
-                        "arena at " + 
-                        "x: " + Math.round(arenaInfo.cx) + 
-                        "y: " + Math.round(arenaInfo.cy)
+                        " x: " + Math.round(me.playerLastCoord[id].x) + 
+                        " y: " + Math.round(me.playerLastCoord[id].y) + 
+                        " arena at " + 
+                        " x: " + Math.round(arenaInfo.cx) + 
+                        " y: " + Math.round(arenaInfo.cy)
                     );
                 }
             });
@@ -137,12 +138,13 @@ initScope = function(scope,league) {
             me.svg.selectAll("circle.node")
                 .attr("cx", function(d) { return me.playerLastCoord[d.id].x; })
                 .attr("cy", function(d) { return me.playerLastCoord[d.id].y; })
+                .style("fill", function(d) { return me.arenas[d.arenaID].fill; })
+                .style("stroke", function(d) { return d3.rgb(me.arenas[d.arenaID].fill).darker(2); });
         
             if (e.alpha < (1 - me.transitionCutoff)) {
                 debug.debug("force.stop" +
                     " seasonOver " + me.currentYear +
                     " entered " + me.counts.enter +
-                    " updated " + me.counts.update +
                     " exited " + me.counts.exit
                 );
                 me.force.stop();
@@ -197,11 +199,13 @@ initScope = function(scope,league) {
         debug.debug("Do firstSeason " + curSeason);
 
         me.activePlayers = [];
+        me.force.nodes(me.activePlayers);
         var roster = league.getRoster(curSeason);
         for (var teamID in roster) {
             for (var i = 0; i < roster[teamID].length; i++) {
+                var id = roster[teamID][i];
                 var player = {
-                    'id' : roster[teamID][i],
+                    'id' : id,
                     'fill' : me.arenas[teamID].fill,
                     'teamID'  : teamID,
                     'arenaID' : teamID //XXX: this should be a function of the season and the team
@@ -214,15 +218,49 @@ initScope = function(scope,league) {
                     };
                 };
 
+                if (id in me.trackThesePlayers) {
+                    debug.debug(
+                        "Adding tracked player " + id + 
+                        " team ID " + player.teamID + 
+                        " to activePlayers."
+                    );
+                }
+
                 me.activePlayers.push(player);
             }
         }
 
         me.counts = {
             "enter"  : 0,
-            "update" : 0,
             "exit"   : 0
         };
+
+        me.force.nodes(me.activePlayers);
+        var node = me.svg.selectAll(".node").data(me.force.nodes(), function(d) { return d.id;});
+
+        node.enter().append("svg:circle")
+            .each( function(d) { 
+                me.counts.enter++;
+                if (d.id in me.trackThesePlayers) {
+                    debug.debug("Saw player " + d.id + " enter league");
+                }
+            })
+            .attr("class", "node")
+            .attr("cx", function(d) { return me.playerLastCoord[d.id].x; })
+            .attr("cy", function(d) { return me.playerLastCoord[d.id].y; })
+            .attr("r", 5)
+            .style("fill", function(d) { return d.fill; })
+            .style("stroke", function(d) { return d3.rgb(d.fill).darker(2); })
+            .style("stroke-width", 1.5)
+            .append("svg:title").text(function(d) { return d.id });
+            //.call(me.force.drag);
+        
+        node.exit().each( function(d) { 
+            me.counts.exit++;
+            if (d.id in me.trackThesePlayers) {
+                debug.debug("Saw player " + d.id + " exit league");
+            }
+        }).remove();
 
         me.force.start();
         me.transitionInProgress = true;
@@ -234,34 +272,34 @@ initScope = function(scope,league) {
         //  summary: http://bost.ocks.org/mike/constancy/
         //  source: https://github.com/mbostock/bost.ocks.org/blob/gh-pages/mike/constancy/index.html
 
-        var node = me.svg.selectAll("circle.node")
-            .data(me.activePlayers, function (d) { return d.id });
+       //var node = me.svg.selectAll("circle.node")
+       //    .data(me.activePlayers, function (d) { return d.id });
         
-        var nodeEnter = node.enter().append("svg:circle")
-              .attr("class", "node")
-              .attr("debug", function(d) { me.counts.enter++; })
-              .attr("cx", function(d) { return me.playerLastCoord[d.id].x; })
-              .attr("cy", function(d) { return me.playerLastCoord[d.id].y; })
-              .attr("r", 5)
-              .style("fill", function(d) { return d.fill; })
-              .style("stroke", function(d) { return d3.rgb(d.fill).darker(2); })
-              .style("stroke-width", 1.5)
-              .append("svg:title").text(function(d) { return d.id })
-              .call(me.force.drag);
+       //var nodeEnter = node.enter().append("svg:circle")
+       //      .attr("class", "node")
+       //      .attr("debug", function(d) { me.counts.enter++; })
+       //      .attr("cx", function(d) { return me.playerLastCoord[d.id].x; })
+       //      .attr("cy", function(d) { return me.playerLastCoord[d.id].y; })
+       //      .attr("r", 5)
+       //      .style("fill", function(d) { return d.fill; })
+       //      .style("stroke", function(d) { return d3.rgb(d.fill).darker(2); })
+       //      .style("stroke-width", 1.5)
+       //      .append("svg:title").text(function(d) { return d.id })
+       //      .call(me.force.drag);
         
-        var nodeUpdate = d3.transition(node)
-              .select("circle")
-              .attr("debug", function(d) { me.counts.update++; })
-              .attr("cx", function(d) { return me.arenas[d.arenaID].cx; })
-              .attr("cy", function(d) { return me.arenas[d.arenaID].cy; })
-              .style("fill", function(d) { return d.fill; })
-              .style("stroke", function(d) { return d3.rgb(d.fill).darker(2); });
-              //.each("end", function(d) { debug.debug("end called for " + d.id); });
+       //var nodeUpdate = d3.transition(node)
+       //      .select("circle")
+       //      .attr("debug", function(d) { me.counts.update++; })
+       //      .attr("cx", function(d) { return me.arenas[d.arenaID].cx; })
+       //      .attr("cy", function(d) { return me.arenas[d.arenaID].cy; })
+       //      .style("fill", function(d) { return d.fill; })
+       //      .style("stroke", function(d) { return d3.rgb(d.fill).darker(2); });
+       //      //.each("end", function(d) { debug.debug("end called for " + d.id); });
             
-        var nodeExit = d3.transition(node.exit())
-              .select("circle")
-              .style("fill-opacity", 0)
-              .attr("debug", function(d) { me.counts.remove++; })
-              .remove();
+       //var nodeExit = d3.transition(node.exit())
+       //      .select("circle")
+       //      .style("fill-opacity", 0)
+       //      .attr("debug", function(d) { me.counts.remove++; })
+       //      .remove();
     };
 };

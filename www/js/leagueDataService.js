@@ -2,7 +2,9 @@ angular.module('leagueDataService', []).factory('league', function ($http) {
     debug.debug("league Init called");
     
     var l = {
-        dataSource : '/data/league.json',
+        //dataSource : '/data/league.json',
+        dataSource : '/data/league.starta.json',
+        //dataSource : '/data/league.test.pretty.json',
         data : {},
         computed : {}
     };
@@ -45,8 +47,7 @@ angular.module('leagueDataService', []).factory('league', function ($http) {
 
     l.getNextSeason = function(curSeason) {
         var seasons = l.getSeasons();
-        //for (var i = 0; i < seasons.length; i++) {
-        for (var i = 0; i < 4; i++) {
+        for (var i = 0; i < seasons.length; i++) {
             if (seasons[i] == curSeason) {
                 if (i + 1 < seasons.length) {
                     return seasons[i + 1];

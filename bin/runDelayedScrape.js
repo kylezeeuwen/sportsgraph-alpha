@@ -1,6 +1,9 @@
-var nhl  = require("/home/dev/projects/sportgraph/node_modules/nhl-api/lib/nhl.js");
+var nhl  = require("/home/dev/projects/sportsgraph-alpha/node_modules/nhl-api/lib/nhl.js");
 var fs   = require('fs');
 var util = require('util');
+
+var delay = 30000;
+var baseDir = "/home/dev/projects/sportsgraph-alpha/data/scrape-201308/";
 
 var teams = [
   'blackhawks',
@@ -13,7 +16,7 @@ var teams = [
   'oilers',
   'wild',
   'canucks',
-  'ducks'
+  'ducks',
   'stars',
   'kings',
   'coyotes',
@@ -34,6 +37,7 @@ var teams = [
   'capitals',
   'jets'
 ];
+
 var seasons = [
   '19951996',
   '19961997',
@@ -55,44 +59,82 @@ var seasons = [
   '20122013'
 ];
 
+var seasonTypes = [
+    'regular',
+    'playoff'
+];
+
 var jobs = [];
 for (var i = 0; i < teams.length; i++) {
   for (var j = 0; j < seasons.length; j++) {
-    jobs.push({ team : teams[i], season : seasons[j] });
+    for (var k = 0; k < seasonTypes.length; k++) {
+        
+        var job = { team : teams[i], season : seasons[j], seasonType : seasonTypes[k] };
+        var fileName = 
+            baseDir + job.team + 
+            "-" + job.season + 
+            "-" + job.seasonType;
+
+        if (!(fs.existsSync(fileName))) {
+            jobs.push({ team : teams[i], season : seasons[j], seasonType : seasonTypes[k] });
+        }
+        else {
+            util.log(util.format("Skipping team %s season %s type %s: file exists",
+                job.team, job.season, job.seasonType
+            ));
+        }
+    }
   }
 }   
 
 var intervalID = setInterval( function() {
     if (jobs.length > 0) {
     	var job = jobs.pop();
-        util.log(util.format("Starting attempt for team %s season %s", job.team, job.season)); 
-        nhl.team(job.team,job.season, function(team,season,players) {
+        util.log(util.format("Starting attempt for team %s season %s type %s", 
+            job.team, job.season, job.seasonType
+        )); 
+
+        var fileName = 
+            baseDir + job.team + 
+            "-" + job.season + 
+            "-" + job.seasonType;
+
+        nhl.team(job, function(outArgs,players) {
           if(players) {
-            var fileName = "/home/dev/projects/sportgraph/data/scrape/" + team + "-" + season;
+        
+            var fileName = 
+                baseDir + outArgs.team + 
+                "-" + outArgs.season + 
+                "-" + outArgs.seasonType;
+        
             var struct = {
-                'team' : team,
-                'season' : season,
+                'team' : outArgs.team,
+                'season' : outArgs.season,
+                'seasonType' : outArgs.seasonType,
                 'players' : players
             };
+        
             fs.writeFile(fileName, JSON.stringify(struct), function(err) {
               if(err) {
-                util.log(util.format("Fail to save file for team %s season %s: %s",
-                  team, season, err
+                util.log(util.format("Fail to save file for team %s season %s type %s: %s",
+                  outArgs.team, outArgs.season, outArgs.seasonType, err
                 ));
               } else {
-                util.log(util.format("The file for team %s season %s was saved",
-                  team, season
+                util.log(util.format("The file for team %s season %s type %s saved",
+                  outArgs.team, outArgs.season, outArgs.seasonType
                 ));
               }
             }); 
           }
           else {
-            util.log(util.format("No players for team %s season %s",team, season));
+            util.log(util.format("No players for team %s season %s type %s",
+                outArgs.team, outArgs.season, outArgs.seasonType
+            ));
           }
         });
     }
     else {
         clearInterval(intervalID);
     }
-}, 60000);
+}, delay);
 
