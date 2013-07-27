@@ -9,6 +9,9 @@ angular.module("sportsGraphDirective", []).directive(
             link : function(scope, iElement, iAttrs, controller) {
                 debug.debug("graph directive link called");
                 var me = scope;
+                me.trackThesePlayers = {
+                   // 1 : 1
+                };
 
                 //add methods to me
                 initScope(me,league);    
@@ -72,7 +75,6 @@ initScope = function(scope,league) {
     
     me.setupCanvas = function(iElement, w, h) {
         debug.debug("graph setupCanvas called");
-        var fill = d3.scale.category20();
         
         me.svg = d3.select('#' + iElement.attr('id')).append("svg")
             .attr("width", w)
@@ -98,16 +100,39 @@ initScope = function(scope,league) {
             //debug.debug("in tick e.alpha is %s", e.alpha);
         
             var k = me.speed * e.alpha;
-            if (k > 1) { k = 1; }
+            if (k > 0.7) { k = 0.7; }
         
             me.activePlayers.forEach(function(player, i) {
         
                 var arenaInfo = me.arenas[player.arenaID];
                 var id = player.id;
-                me.playerLastCoord[id].x += (arenaInfo.cx - me.playerLastCoord[id].x) * k; 
-                me.playerLastCoord[id].y += (arenaInfo.cy - me.playerLastCoord[id].y) * k; 
+                var closeEnough = 1;                
+                var diff;
+
+                diff = arenaInfo.cx - me.playerLastCoord[id].x;
+                if (Math.abs(diff) > closeEnough) {
+                    me.playerLastCoord[id].x += diff * k; 
+                }
+                
+                diff = arenaInfo.cy - me.playerLastCoord[id].y;
+                if (Math.abs(diff) > closeEnough) {
+                    me.playerLastCoord[id].y += diff * k; 
+                }
+
+                if (id in me.trackThesePlayers) {
+                    debug.debug(
+                        "Tracked player " + id + 
+                        "Arena ID " + player.arenaID + 
+                        " at " + 
+                        "x: " + Math.round(me.playerLastCoord[id].x) + 
+                        "y: " + Math.round(me.playerLastCoord[id].y) + 
+                        "arena at " + 
+                        "x: " + Math.round(arenaInfo.cx) + 
+                        "y: " + Math.round(arenaInfo.cy)
+                    );
+                }
             });
-       
+        
             //XXX: write xy to playerLastCoord AND activeplayers, only retrieve on miss, save time 
             me.svg.selectAll("circle.node")
                 .attr("cx", function(d) { return me.playerLastCoord[d.id].x; })
@@ -202,10 +227,17 @@ initScope = function(scope,league) {
         me.force.start();
         me.transitionInProgress = true;
 
+        //node is the selection of players that persisted from one season to the next
+        //node.enter() yeilds arriving players, node.exit() yileds exiting players.
+        // Read the D3 docs and specifically D3 constancy to figure this out:
+        // NB links may get out of date. search "D3 constancy":
+        //  summary: http://bost.ocks.org/mike/constancy/
+        //  source: https://github.com/mbostock/bost.ocks.org/blob/gh-pages/mike/constancy/index.html
+
         var node = me.svg.selectAll("circle.node")
             .data(me.activePlayers, function (d) { return d.id });
-
-        node.enter().append("svg:circle")
+        
+        var nodeEnter = node.enter().append("svg:circle")
               .attr("class", "node")
               .attr("debug", function(d) { me.counts.enter++; })
               .attr("cx", function(d) { return me.playerLastCoord[d.id].x; })
@@ -214,14 +246,22 @@ initScope = function(scope,league) {
               .style("fill", function(d) { return d.fill; })
               .style("stroke", function(d) { return d3.rgb(d.fill).darker(2); })
               .style("stroke-width", 1.5)
+              .append("svg:title").text(function(d) { return d.id })
               .call(me.force.drag);
-    
-        node.transition().select("circle")
-              .attr("debug", function(d) { me.counts.update++; });
+        
+        var nodeUpdate = d3.transition(node)
+              .select("circle")
+              .attr("debug", function(d) { me.counts.update++; })
+              .attr("cx", function(d) { return me.arenas[d.arenaID].cx; })
+              .attr("cy", function(d) { return me.arenas[d.arenaID].cy; })
+              .style("fill", function(d) { return d.fill; })
+              .style("stroke", function(d) { return d3.rgb(d.fill).darker(2); });
+              //.each("end", function(d) { debug.debug("end called for " + d.id); });
             
-        node.exit().select("circle")
-              .attr("debug", function(d) { me.counts.remove++; });
-    
-        node.exit().remove();
+        var nodeExit = d3.transition(node.exit())
+              .select("circle")
+              .style("fill-opacity", 0)
+              .attr("debug", function(d) { me.counts.remove++; })
+              .remove();
     };
 };
