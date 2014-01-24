@@ -1,6 +1,3 @@
-sportsgraph-alpha
-=================
-
 # SportsGraph Trade Visualization Tool
 Ever wonder if the owners of various sports franchises are colluding to defeat some other owner?
 Well I did, and I wanted to use Angular and D3 in a non-work project, and thus the 'SportsGraph Trade Visualization Tool' was born.
