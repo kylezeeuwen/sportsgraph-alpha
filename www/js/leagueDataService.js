@@ -1,10 +1,8 @@
 angular.module('leagueDataService', []).factory('league', function ($http) {
-    debug.debug("league Init called");
+    if (globals.debugF) { console.log("league Init called"); }
     
     var l = {
-        //dataSource : '/data/league.json',
-        dataSource : '/data/league.starta.json',
-        //dataSource : '/data/league.test.pretty.json',
+        dataSource : '/data/league.json',
         data : {},
         computed : {}
     };

@@ -1,5 +1,5 @@
 function outerController($scope, league) {
-    debug.debug("outerController Init called");
+    if (globals.debugF) { console.log("outerController Init called"); }
 
     $scope.available = false;
     $scope.haveData = false;
@@ -8,14 +8,14 @@ function outerController($scope, league) {
     $scope.toggleStop = function() {
         if ($scope.stop) { $scope.stop = false; }
         else { $scope.stop = true; }
-        debug.debug("In outerController toggleStop newValue: " + $scope.stop);
+        if (globals.debugF) { console.log("In outerController toggleStop newValue: " + $scope.stop); }
     }
 
     $scope.$watch('stop', function(newValue) {
     });
 
     $scope.$watch(league.haveData, function(haveData) {
-        debug.debug("In outerController watch haveData:" + haveData);
+        if (globals.debugF) { console.log("In outerController watch haveData:" + haveData); }
         if (haveData) {
 
             $scope.minSeason = parseInt(league.getMinSeason());
