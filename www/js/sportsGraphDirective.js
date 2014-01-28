@@ -198,6 +198,7 @@ angular.module("sportsGraphDirective", []).directive(
                     me.activePlayers = [];
                     me.force.nodes(me.activePlayers);
                     var roster = league.getRoster(curSeason);
+
                     for (var teamID in roster) {
                         for (var i = 0; i < roster[teamID].length; i++) {
                             var id = roster[teamID][i];
@@ -209,10 +210,30 @@ angular.module("sportsGraphDirective", []).directive(
                             };
                 
                             if (!(player.id in me.playerLastCoord)) {
-                                me.playerLastCoord[player.id] = {
-                                    'x' : Math.random() * me.w,
-                                    'y' : Math.random() * me.h
-                                };
+    
+                                // if there is an initial point specified for entering 
+                                // players then use this point.
+                                // The visual effect will be that all players emerge from this point
+                                // else use a random point
+                                if (typeof(globals["graph"]) != undefined && 
+                                    typeof(globals["graph"]["start"]) != undefined) {
+
+                                    var coords = me.projection([
+                                        globals.graph.start["long"],
+                                        globals.graph.start.lat
+                                    ]);
+                                    me.playerLastCoord[player.id] = {
+                                        'x' : coords[0],
+                                        'y' : coords[1]
+                                    };
+                                }
+                                else {
+                                    me.playerLastCoord[player.id] = {
+                                        'x' : Math.random() * me.w,
+                                        'y' : Math.random() * me.h
+                                    };
+                                }
+
                             };
                 
                             if (id in me.trackThesePlayers) {
