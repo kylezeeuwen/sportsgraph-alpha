@@ -5,6 +5,7 @@ angular.module("sportsGraphDirective", []).directive(
             restrict: 'E',
             scope : {
                 currentYear: '=',
+                currentSpeed: '=',
                 width: '=',
                 height: '='
             },
@@ -58,8 +59,6 @@ angular.module("sportsGraphDirective", []).directive(
                 
                 me.w = me.width;
                 me.h = me.height;
-                me.speed = 0.75;
-                me.transitionCutoff = 0.96;
                 me.fill = d3.scale.category20();
                 me.activePlayers = [];
                 me.playerLastCoord = {};
@@ -76,7 +75,7 @@ angular.module("sportsGraphDirective", []).directive(
                 
                     ///////////////////////////////////////////////////////////////////////////////
                     // Init the map bits
-        ///////////////////////////////////////////////////////////////////////////////
+                    ///////////////////////////////////////////////////////////////////////////////
         
                     me.projection = d3.geo.mercator()
                         .center([-100,45])
@@ -117,29 +116,41 @@ angular.module("sportsGraphDirective", []).directive(
                     });
                     
                     me.force.on("tick", function(e) {
-                    
-                        //if (globals.debugF) { console.log("in tick e.alpha is %s", e.alpha); }
-                    
-                        var k = me.speed * e.alpha;
-                        if (k > 0.7) { k = 0.7; }
-                    
+                 
+                        //XXX: this is not really an appropriate use of force as I am no longer using gravity or alpha   
+                  
+                        //define variables outside loop to reduce required garbage collection
+                        var closeEnough = 0.05;                
+                        var xDiff, yDiff;
+                        var arenaInfo, id;
+                        var minTicksToGetHome = 30;
+                        var stillTransitioning = false;
+                        var numTransitioned = 0;
+                        var playerTransitioned;
                         me.activePlayers.forEach(function(player, i) {
+
+                            playerTransitioned = false;
+                            arenaInfo = me.arenas[player.arenaID];
+                            id = player.id;
                     
-                            var arenaInfo = me.arenas[player.arenaID];
-                            var id = player.id;
-                            var closeEnough = 1;                
-                            var diff;
-                    
-                            diff = arenaInfo.cx - me.playerLastCoord[id].x;
-                            if (Math.abs(diff) > closeEnough) {
-                                me.playerLastCoord[id].x += diff * k; 
+                            xDiff = arenaInfo.cx - me.playerLastCoord[id].x;
+                            if (Math.abs(xDiff) > closeEnough) {
+                                playerTransitioned = true;
+                                me.playerLastCoord[id].x += xDiff * ( me.currentSpeed * 0.01 / minTicksToGetHome); 
                             }
                             
-                            diff = arenaInfo.cy - me.playerLastCoord[id].y;
-                            if (Math.abs(diff) > closeEnough) {
-                                me.playerLastCoord[id].y += diff * k; 
+                            yDiff = arenaInfo.cy - me.playerLastCoord[id].y;
+                            if (Math.abs(yDiff) > closeEnough) {
+                                playerTransitioned = true;
+                                me.playerLastCoord[id].y += yDiff * ( me.currentSpeed * 0.01 / minTicksToGetHome); 
                             }
-                    
+                            
+                            if (playerTransitioned) {
+                                stillTransitioning = true;
+                                numTransitioned++;
+                            }
+                   
+                            // debug feature
                             if (id in me.trackThesePlayers) {
                                 if (globals.debugF) { console.log(
                                     "Tracked player " + id + 
@@ -153,7 +164,8 @@ angular.module("sportsGraphDirective", []).directive(
                                 )};
                             }
                         });
-                    
+                        console.log("%s tick %d players transitioned", me.currentYear, numTransitioned);
+
                         //XXX: write xy to playerLastCoord AND activeplayers, only retrieve on miss, save time 
                         me.svg.selectAll("circle.node")
                             .attr("cx", function(d) { return me.playerLastCoord[d.id].x; })
@@ -161,7 +173,7 @@ angular.module("sportsGraphDirective", []).directive(
                             .style("fill", function(d) { return me.arenas[d.arenaID].fill; })
                             .style("stroke", function(d) { return d3.rgb(me.arenas[d.arenaID].fill).darker(2); });
                     
-                        if (e.alpha < (1 - me.transitionCutoff)) {
+                        if (!stillTransitioning) {
                             if (globals.debugF) { console.log(
                                 "force.stop" +
                                 " seasonOver " + me.currentYear +
@@ -175,6 +187,10 @@ angular.module("sportsGraphDirective", []).directive(
                                 me.currentYear = nextSeason;
                                 me.$apply();
                             }
+                        }
+                        else {
+                            //keep the simulation hot!
+                            me.force.alpha(0.1);
                         }
                     });
         

@@ -40,12 +40,11 @@
 
   </style>
   <body ng-controller="outerController">
-    <h2>Current Year: {{currentYear}}</h2> 
     
     <slider id="slider" floor="{{minSeason}}" ceiling="{{maxSeason}}" step="1" precision="0" ng-model="currentYear"></slider>
-    <button id="stop-button" type="submit" class="btn btn-primary" ng-click="toggleStop()">
+    <slider id="speed-slider" floor="0" ceiling="100" step="1" precision="0" ng-model="currentSpeed"></slider>
 
-    <sportsgraph id="sportsgraph" current-year="currentYear" width="1200" height="550"/> 
+    <sportsgraph id="sportsgraph" current-year="currentYear" current-speed="currentSpeed" width="1200" height="550"/> 
     <!-- classes -->
 
     <!-- angular -->

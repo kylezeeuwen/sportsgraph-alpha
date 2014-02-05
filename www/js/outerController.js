@@ -3,16 +3,6 @@ function outerController($scope, league) {
 
     $scope.available = false;
     $scope.haveData = false;
-    $scope.stop = false;
-
-    $scope.toggleStop = function() {
-        if ($scope.stop) { $scope.stop = false; }
-        else { $scope.stop = true; }
-        if (globals.debugF) { console.log("In outerController toggleStop newValue: " + $scope.stop); }
-    }
-
-    $scope.$watch('stop', function(newValue) {
-    });
 
     $scope.$watch(league.haveData, function(haveData) {
         if (globals.debugF) { console.log("In outerController watch haveData:" + haveData); }
@@ -21,6 +11,7 @@ function outerController($scope, league) {
             $scope.minSeason = parseInt(league.getMinSeason());
             $scope.maxSeason = parseInt(league.getMaxSeason());
             $scope.currentYear = $scope.minSeason;
+            $scope.currentSpeed = 100;
             $scope.available = true;
             $scope.haveData  = true;
         }
