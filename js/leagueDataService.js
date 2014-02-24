@@ -2,11 +2,7 @@ angular.module('leagueDataService', []).factory('league', function ($http) {
     if (globals.debugF) { console.log("league Init called"); }
     
     var l = {
-        //dataSource : '/data/league.json',
-        //dataSource : '/data/league.starta.json', // has 1100 records
-        //dataSource : '/data/league.121record.json', // 121 records 
-        dataSource : '/data/league.haslettera.halfsize.json', // has 8000 records
-        //dataSource : '/data/league.haslettert.quartersize.json', // has 3700 records
+        dataSource : globals.graph.sources.league,
         data : {},
         computed : {}
     };

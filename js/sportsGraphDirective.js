@@ -91,7 +91,7 @@ angular.module("sportsGraphDirective", []).directive(
                         .size([me.w, me.h]);
 
                     $.ajax({
-                        url: "/data/world-50m.json",
+                        url: globals.graph.sources.world,
                         async: false,
                         success: function (d) {
                             me.world = d;

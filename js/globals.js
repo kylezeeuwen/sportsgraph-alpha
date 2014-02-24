@@ -4,6 +4,10 @@ var globals = {
     debugF : true,
     debugT : true,
     graph : {
+        sources : {
+            world : 'data/world-50m.json',
+            league : 'data/league.haslettert.quartersize.json'
+        },
         start : {
             // brantford, ontario
             "lat" : 43.166,
