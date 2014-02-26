@@ -2,11 +2,13 @@
 <html ng-app="sportGraph">
   <head>
     <meta charset="utf-8" />
-    <title>Sport Graph V1</title>
+    <title>Sport Graph NHL V1 - Beta</title>
 
     <!-- <link rel="stylesheet" href="/lib/js/jquery-ui/jquery-ui-1.10.3/themes/base/jquery.ui.slider.css" /> XXX: what to do with this? -->
     <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css" />
     <link rel="stylesheet" href="lib/js/angular-slider/angular-slider.min.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="css/visualization.css">
+    <link rel="stylesheet" type="text/css" media="screen" href="css/demo.css">
 
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/angularjs/1.1.5/angular.min.js"></script>
     <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
@@ -18,32 +20,25 @@
 
     <script type="text/javascript" src="js/globals.js"></script>
   </head>
-  <style>
-
-  .graticule {
-    fill: none;
-    stroke: #777;
-    stroke-opacity: .5;
-    stroke-width: .5px;
-  }
-  
-  .land {
-    fill: #222;
-  }
-  
-  .boundary {
-    fill: none;
-    stroke: #fff;
-    stroke-width: .5px;
-  }
-
-  </style>
   <body ng-controller="outerController">
     
-    <slider id="slider" floor="{{minSeason}}" ceiling="{{maxSeason}}" step="1" precision="0" ng-model="currentYear"></slider>
-    <slider id="speed-slider" floor="0" ceiling="100" step="1" precision="0" ng-model="currentSpeed"></slider>
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <span id="project_title">NHL Trade Graph : </span>
+          <span id="current_year">{{currentYear}}</span>
 
-    <sportsgraph id="sportsgraph" current-year="currentYear" current-speed="currentSpeed" width="1200" height="550"/> 
+        </header>
+        <div id="control_panel">
+          <div class="row">
+            <div id="speed-slider-label" class="span1">Speed:</div>
+            <slider id="speed-slider" floor="0" ceiling="100" step="1" precision="0" ng-model="currentSpeed"></slider>
+        </div>
+    </div>
+
+    <div id="main_content_wrap" class="outer">
+      <sportsgraph id="sportsgraph" current-year="currentYear" current-speed="currentSpeed" width="1200" height="550"/> 
+    </div>
     <!-- classes -->
 
     <!-- angular -->
