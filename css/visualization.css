@@ -6,11 +6,11 @@
 }
 
 .land {
-  fill: #222;
+  fill: #77B264;
 }
 
 .boundary {
   fill: none;
-  stroke: #fff;
+  stroke: black;
   stroke-width: .5px;
 }
