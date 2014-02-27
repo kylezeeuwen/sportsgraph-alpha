@@ -78,8 +78,8 @@ angular.module("sportsGraphDirective", []).directive(
                     ///////////////////////////////////////////////////////////////////////////////
         
                     me.projection = d3.geo.mercator()
-                        .center([-100,45])
-                        .scale(850);
+                        .center([-100,43])
+                        .scale(800);
                     
                     me.path = d3.geo.path()
                         .projection(me.projection);
