@@ -4,13 +4,8 @@ Well I did, and I wanted to use Angular and D3 in a non-work project, and thus t
 Still in very early stages, it is already fun to watch it work. Lots of dots flying around the screen. At the moment that is it ;)
 
 ## Try it out ?
-The checkins on github do not include the many required JS libraries.
-However I keep up to dat tar.gz versions of the project in the dist/ folder. If you download and untar one of the files, and copy the entire contents into your favorite web servers www folder, everything should work!
+The project page can be found here : http://kylezeeuwen.github.io/sportsgraph-alpha/
+The demo is live at http://kylezeeuwen.github.io/sportsgraph-alpha/demo.html
 
 ##Current Dev Tasks
-* maximize screen space
-* slow down transitions / add vertical slider to control speed / remove force(?)
-  * vertical speed slider
-* make city clusters bigger
-* make teams more apparent - correct colors / logos ?
-* fisheye magnification
+See http://kylezeeuwen.github.io/sportsgraph-alpha/ for the active list
