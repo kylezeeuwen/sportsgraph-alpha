@@ -13,7 +13,7 @@ angular.module("sportsGraphDirective", []).directive(
                 if (globals.debugF) { console.log("graph directive link called"); }
                 var me = scope;
                 me.trackThesePlayers = {
-                   1015 : 1
+                //   1458 : 1
                 };
 
                 me.setupCanvas(iElement);
@@ -28,7 +28,7 @@ angular.module("sportsGraphDirective", []).directive(
                     if (me.haveData && me.haveMap) {
                         me.assignArenaCoordinates();
                         me.ready = true;
-                        me.doFirstSeason(me.currentYear);
+                        me.animateSeason(me.currentYear);
                     }
                 });
 
@@ -44,16 +44,18 @@ angular.module("sportsGraphDirective", []).directive(
                         return;
                     }
                     else if (!oldYear || oldYear == 'NaN') {
-                        scope.doFirstSeason(newYear);
+                        scope.animateSeason(newYear);
                     } 
                     else if (newYear != oldYear) {
-                        scope.doFirstSeason(newYear);
+                        scope.animateSeason(newYear);
                     }
                 });
             },
             controller : function($scope, league) {
-                if (globals.debugF) { console.log("in sportsGraphDirective controller init"); }
-               console.log("controller init width is %s and height is %s", $scope.width, $scope.height);   
+                if (globals.debugF) { 
+                    console.log("in sportsGraphDirective controller init");
+                    console.log("controller init width is %s and height is %s", $scope.width, $scope.height);
+                } 
  
                 var me = $scope;
                 
@@ -112,18 +114,39 @@ angular.module("sportsGraphDirective", []).directive(
                             
                     
                             me.haveMap = true;
+
+                            //add hockey start image if this feature is enabled
+                            if (me.haveOriginCoords()) {
+                                var startCoords = me.projection([
+                                    globals["graph"]["start"]["long"],
+                                    globals["graph"]["start"]["lat"]
+                                ]);
+
+                                var innerG = me.svg.append("svg:g")
+                                    .attr("class","start")
+                                    .attr("transform",
+                                        "translate(" + startCoords[0] + "," + startCoords[1] + ")");
+
+                                innerG.append("image")
+                                      .attr("xlink:href", "images/cradle.png")
+                                      .attr("width", 32)
+                                      .attr("height", 32);
+                                
+                                innerG.append("svg:title").text(
+                                    "This is where all rookies start from (I dont have their actual home towns but that would be better)!"
+                                );
+                            }
                         }
                     });
                     
                     me.force.on("tick", function(e) {
                  
                         //XXX: this is not really an appropriate use of force as I am no longer using gravity or alpha   
-                  
                         //define variables outside loop to reduce required garbage collection
-                        var closeEnough = 0.05;                
+                        var closeEnough = 0.5;                
                         var xDiff, yDiff;
                         var arenaInfo, id;
-                        var minTicksToGetHome = 30;
+                        var minTicksToGetHome = 100;
                         var stillTransitioning = false;
                         var numTransitioned = 0;
                         var playerTransitioned;
@@ -132,17 +155,19 @@ angular.module("sportsGraphDirective", []).directive(
                             playerTransitioned = false;
                             arenaInfo = me.arenas[player.arenaID];
                             id = player.id;
-                    
-                            xDiff = arenaInfo.cx - me.playerLastCoord[id].x;
-                            if (Math.abs(xDiff) > closeEnough) {
-                                playerTransitioned = true;
-                                me.playerLastCoord[id].x += xDiff * ( me.currentSpeed * 0.01 / minTicksToGetHome); 
-                            }
+                   
+                            var pos = me.playerLastCoord[id];
+                            // is player at dst
+                            xDiff = pos["dst"][0] - pos["cur"][0];
+                            yDiff = pos["dst"][1] - pos["cur"][1];
                             
-                            yDiff = arenaInfo.cy - me.playerLastCoord[id].y;
-                            if (Math.abs(yDiff) > closeEnough) {
+                            xTotalDiff = pos["dst"][0] - pos["src"][0];
+                            yTotalDiff = pos["dst"][1] - pos["src"][1];
+
+                            if (Math.abs(xDiff) > closeEnough || Math.abs(yDiff) > closeEnough) {
                                 playerTransitioned = true;
-                                me.playerLastCoord[id].y += yDiff * ( me.currentSpeed * 0.01 / minTicksToGetHome); 
+                                pos["cur"][0] += xTotalDiff * ( me.currentSpeed * 0.01 / minTicksToGetHome); 
+                                pos["cur"][1] += yTotalDiff * ( me.currentSpeed * 0.01 / minTicksToGetHome); 
                             }
                             
                             if (playerTransitioned) {
@@ -153,32 +178,39 @@ angular.module("sportsGraphDirective", []).directive(
                             // debug feature
                             if (id in me.trackThesePlayers) {
                                 if (globals.debugF) { console.log(
-                                    "Tracked player " + id + 
-                                    " Team ID " + player.teamID + 
-                                    " at " + 
-                                    " x: " + Math.round(me.playerLastCoord[id].x) + 
-                                    " y: " + Math.round(me.playerLastCoord[id].y) + 
-                                    " arena at " + 
-                                    " x: " + Math.round(arenaInfo.cx) + 
-                                    " y: " + Math.round(arenaInfo.cy)
+                                    "Tracked player %s TeamID %s loc: cur (%f,%f), src (%f,%f), dst (%f, %f)",
+                                    id, player.teamID, 
+                                    Math.round(me.playerLastCoord[id]["cur"][0]), 
+                                    Math.round(me.playerLastCoord[id]["cur"][1]), 
+                                    Math.round(me.playerLastCoord[id]["src"][0]), 
+                                    Math.round(me.playerLastCoord[id]["src"][1]), 
+                                    Math.round(me.playerLastCoord[id]["dst"][0]), 
+                                    Math.round(me.playerLastCoord[id]["dst"][1])
                                 )};
                             }
                         });
-                        console.log("%s tick %d players transitioned", me.currentYear, numTransitioned);
+                        if (globals.debugF) { 
+                            console.log(
+                                "%s tick %d players transitioned", 
+                                me.currentYear, 
+                                numTransitioned
+                            );
+                        }
 
                         //XXX: write xy to playerLastCoord AND activeplayers, only retrieve on miss, save time 
                         me.svg.selectAll("circle.node")
-                            .attr("cx", function(d) { return me.playerLastCoord[d.id].x; })
-                            .attr("cy", function(d) { return me.playerLastCoord[d.id].y; })
+                            .attr("cx", function(d) { return me.playerLastCoord[d.id]["cur"][0]; })
+                            .attr("cy", function(d) { return me.playerLastCoord[d.id]["cur"][1]; })
                             .style("fill", function(d) { return me.arenas[d.arenaID].fill; })
                             .style("stroke", function(d) { return d3.rgb(me.arenas[d.arenaID].fill).darker(2); });
                     
-                        if (!stillTransitioning) {
+                        if (!stillTransitioning || me.tickCount > 1000) {
                             if (globals.debugF) { console.log(
                                 "force.stop" +
                                 " seasonOver " + me.currentYear +
                                 " entered " + me.counts.enter +
-                                " exited " + me.counts.exit
+                                " exited " + me.counts.exit +
+                                " tickCount " + me.tickCount
                             )}
                             me.force.stop();
                             me.transitionInProgress = false;
@@ -191,6 +223,7 @@ angular.module("sportsGraphDirective", []).directive(
                         else {
                             //keep the simulation hot!
                             me.force.alpha(0.1);
+                            me.tickCount++;
                         }
                     });
         
@@ -208,9 +241,10 @@ angular.module("sportsGraphDirective", []).directive(
                     }
                 };
                 
-                me.doFirstSeason = function(curSeason) {
+                me.animateSeason = function(curSeason) {
                     if (globals.debugF) { console.log("Do firstSeason " + curSeason); }
                 
+                    me.tickCount = 0;
                     me.activePlayers = [];
                     me.force.nodes(me.activePlayers);
                     var roster = league.getRoster(curSeason);
@@ -225,32 +259,31 @@ angular.module("sportsGraphDirective", []).directive(
                                 'arenaID' : teamID //XXX: this should be a function of the season and the team
                             };
                 
+                            // if the player in not in playerLastCoord this is a new player entering league
+                            // else it is an existing player
                             if (!(player.id in me.playerLastCoord)) {
     
                                 // if there is an initial point specified for entering 
                                 // players then use this point.
                                 // The visual effect will be that all players emerge from this point
                                 // else use a random point
-                                if (typeof(globals["graph"]) != undefined && 
-                                    typeof(globals["graph"]["start"]) != undefined) {
+                                var coords = me.getOriginCoords();
+                                me.playerLastCoord[player.id] = {
+                                    'src' : coords,
+                                    'cur' : coords.slice(0),
+                                    'dst' : [me.arenas[teamID].cx, me.arenas[teamID].cy]
+                                };
+                            }
+                            else {
+                                // i am starting from where I currently am
+                                me.playerLastCoord[player.id]["src"] =
+                                    me.playerLastCoord[player.id]["cur"].slice(0);
+                                // i am moving to the arena of my current team
+                                me.playerLastCoord[player.id]["dst"] = 
+                                    [me.arenas[teamID].cx, me.arenas[teamID].cy];
+                                //XXX: Add some suppress right here to say (NOT TRANSITIONING THIS YEAR)
 
-                                    var coords = me.projection([
-                                        globals.graph.start["long"],
-                                        globals.graph.start.lat
-                                    ]);
-                                    me.playerLastCoord[player.id] = {
-                                        'x' : coords[0],
-                                        'y' : coords[1]
-                                    };
-                                }
-                                else {
-                                    me.playerLastCoord[player.id] = {
-                                        'x' : Math.random() * me.w,
-                                        'y' : Math.random() * me.h
-                                    };
-                                }
-
-                            };
+                            }
                 
                             if (id in me.trackThesePlayers) {
                                 if (globals.debugF) { console.log(
@@ -287,8 +320,8 @@ angular.module("sportsGraphDirective", []).directive(
                             }
                         })
                         .attr("class", "node")
-                        .attr("cx", function(d) { return me.playerLastCoord[d.id].x; })
-                        .attr("cy", function(d) { return me.playerLastCoord[d.id].y; })
+                        .attr("cx", function(d) { return me.playerLastCoord[d.id]["src"][0]; })
+                        .attr("cy", function(d) { return me.playerLastCoord[d.id]["src"][1]; })
                         .attr("r", 5)
                         .style("fill", function(d) { return d.fill; })
                         .style("stroke", function(d) { return d3.rgb(d.fill).darker(2); })
@@ -306,6 +339,30 @@ angular.module("sportsGraphDirective", []).directive(
                     me.force.start();
                     me.transitionInProgress = true;
                 
+                };
+
+                me.haveOriginCoords = function() {
+                    return (
+                        typeof(globals["graph"]) != "undefined" && 
+                        typeof(globals["graph"]["start"]) != "undefined"
+                    );
+                };
+
+                me.getOriginCoords = function () {
+                    var coords;
+                    if (me.haveOriginCoords()) {
+                        coords = me.projection([
+                            globals.graph.start["long"],
+                            globals.graph.start["lat"]
+                        ]);
+                    }
+                    else {
+                        coords = [
+                            Math.random() * me.w,
+                            Math.random() * me.h
+                        ];
+                    }
+                    return coords;
                 };
             }
         
