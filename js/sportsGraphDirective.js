@@ -6,6 +6,8 @@ angular.module("sportsGraphDirective", []).directive(
             scope : {
                 currentYear: '=',
                 currentSpeed: '=',
+                showRookies: '=',
+                showRetirees: '=',
                 width: '=',
                 height: '='
             },
@@ -80,7 +82,7 @@ angular.module("sportsGraphDirective", []).directive(
                     ///////////////////////////////////////////////////////////////////////////////
         
                     me.projection = d3.geo.mercator()
-                        .center([-100,43])
+                        .center([-100,42])
                         .scale(800);
                     
                     me.path = d3.geo.path()
@@ -116,7 +118,7 @@ angular.module("sportsGraphDirective", []).directive(
                             me.haveMap = true;
 
                             //add hockey start image if this feature is enabled
-                            if (me.haveOriginCoords()) {
+                            if (me.haveRookieCoords()) {
                                 var startCoords = me.projection([
                                     globals["graph"]["start"]["long"],
                                     globals["graph"]["start"]["lat"]
@@ -136,6 +138,28 @@ angular.module("sportsGraphDirective", []).directive(
                                     "This is where all rookies start from (I dont have their actual home towns but that would be better)!"
                                 );
                             }
+                            
+                            //add hockey end image if this feature is enabled
+                            if (me.haveRetireeCoords()) {
+                                var coords = me.projection([
+                                    globals["graph"]["end"]["long"],
+                                    globals["graph"]["end"]["lat"]
+                                ]);
+
+                                var innerG = me.svg.append("svg:g")
+                                    .attr("class","end")
+                                    .attr("transform",
+                                        "translate(" + coords[0] + "," + coords[1] + ")");
+
+                                innerG.append("image")
+                                      .attr("xlink:href", "images/golfer1.png")
+                                      .attr("width", 32)
+                                      .attr("height", 32);
+                                
+                                innerG.append("svg:title").text(
+                                    "This is where all retirees go to play golf"
+                                );
+                            }
                         }
                     });
                     
@@ -149,30 +173,47 @@ angular.module("sportsGraphDirective", []).directive(
                         var minTicksToGetHome = 100;
                         var stillTransitioning = false;
                         var numTransitioned = 0;
-                        var playerTransitioned;
                         me.activePlayers.forEach(function(player, i) {
 
-                            playerTransitioned = false;
                             arenaInfo = me.arenas[player.arenaID];
                             id = player.id;
                    
                             var pos = me.playerLastCoord[id];
-                            // is player at dst
                             xDiff = pos["dst"][0] - pos["cur"][0];
                             yDiff = pos["dst"][1] - pos["cur"][1];
                             
                             xTotalDiff = pos["dst"][0] - pos["src"][0];
                             yTotalDiff = pos["dst"][1] - pos["src"][1];
 
-                            if (Math.abs(xDiff) > closeEnough || Math.abs(yDiff) > closeEnough) {
-                                playerTransitioned = true;
+                            // XXX: there must be a better way ?
+                            // When the user adjusts the speed mid simulation I have seen players
+                            // 'over shoot the mark' as in they cruise past destination and never stop
+                            // this guards against this condition but it is UUUUGLY!
+                            // Alternative: if I use src and dst as corners of a rectangle this is simply a 'contains'
+                            // calculation ...
+                            var overShotTheMark = false;
+                            if (
+                                (pos["src"][0] < pos["cur"][0] && pos["dst"][0] < pos["cur"][0]) || 
+                                (pos["src"][0] > pos["cur"][0] && pos["dst"][0] > pos["cur"][0])
+                            ) {
+                                overShotTheMark = true;
+                            }
+                            if (
+                                (pos["src"][1] < pos["cur"][1] && pos["dst"][1] < pos["cur"][1]) || 
+                                (pos["src"][1] > pos["cur"][1] && pos["dst"][1] > pos["cur"][1])
+                            ) {
+                                overShotTheMark = true;
+                            }
+
+                            // is player at dst ?
+                            if ((Math.abs(xDiff) > closeEnough || Math.abs(yDiff) > closeEnough) && !overShotTheMark) {
+                                stillTransitioning = true;
+                                numTransitioned++;
                                 pos["cur"][0] += xTotalDiff * ( me.currentSpeed * 0.01 / minTicksToGetHome); 
                                 pos["cur"][1] += yTotalDiff * ( me.currentSpeed * 0.01 / minTicksToGetHome); 
                             }
-                            
-                            if (playerTransitioned) {
-                                stillTransitioning = true;
-                                numTransitioned++;
+                            else {
+                                pos["cur"] = pos["dst"].slice(0);
                             }
                    
                             // debug feature
@@ -262,15 +303,11 @@ angular.module("sportsGraphDirective", []).directive(
                             // if the player in not in playerLastCoord this is a new player entering league
                             // else it is an existing player
                             if (!(player.id in me.playerLastCoord)) {
-    
-                                // if there is an initial point specified for entering 
-                                // players then use this point.
-                                // The visual effect will be that all players emerge from this point
-                                // else use a random point
-                                var coords = me.getOriginCoords();
+
+                                var coords = me.getRookieCoords(teamID);
                                 me.playerLastCoord[player.id] = {
                                     'src' : coords,
-                                    'cur' : coords.slice(0),
+                                    'cur' : coords.slice(0), // clone src as cur is updated
                                     'dst' : [me.arenas[teamID].cx, me.arenas[teamID].cy]
                                 };
                             }
@@ -282,7 +319,6 @@ angular.module("sportsGraphDirective", []).directive(
                                 me.playerLastCoord[player.id]["dst"] = 
                                     [me.arenas[teamID].cx, me.arenas[teamID].cy];
                                 //XXX: Add some suppress right here to say (NOT TRANSITIONING THIS YEAR)
-
                             }
                 
                             if (id in me.trackThesePlayers) {
@@ -341,19 +377,62 @@ angular.module("sportsGraphDirective", []).directive(
                 
                 };
 
-                me.haveOriginCoords = function() {
+                me.haveRookieCoords = function() {
                     return (
                         typeof(globals["graph"]) != "undefined" && 
-                        typeof(globals["graph"]["start"]) != "undefined"
+                        typeof(globals["graph"]["start"]) != "undefined" &&
+                        me.showRookies
+                    );
+                };
+                
+                me.haveRetireeCoords = function() {
+                    return (
+                        typeof(globals["graph"]) != "undefined" && 
+                        typeof(globals["graph"]["end"]) != "undefined" &&
+                        me.showRetirees
                     );
                 };
 
-                me.getOriginCoords = function () {
+                // Determine the coordinates for a rookie to start from
+                // Three options:
+                //   a) if me.showRookies is false then start the rookie at their
+                //      team arena so there is no transition 
+                //   a) if me.showRookies is true and globals.graph.start is defined,
+                //      then use globals.graph.start as the 'hockey origin' of all rookies
+                //   c) if me.showRookies is true and globals.graph.start is not defined use
+                //      a random set of coordinates 
+                //      XXX:alternatively detect this condition and error on init
+                //   RETURNS: array containing [x,y]
+                me.getRookieCoords = function (teamID) {
                     var coords;
-                    if (me.haveOriginCoords()) {
+                    if (!me.showRookies) {
+                        coords = [me.arenas[teamID].cx, me.arenas[teamID].cy];
+                    }
+                    else if (me.haveRookieCoords()) {
                         coords = me.projection([
                             globals.graph.start["long"],
                             globals.graph.start["lat"]
+                        ]);
+                    }
+                    else {
+                        coords = [
+                            Math.random() * me.w,
+                            Math.random() * me.h
+                        ];
+                    }
+                    return coords;
+                };
+                
+                //see description of getRookieCoords
+                me.getRetireeCoords = function (teamID) {
+                    var coords;
+                    if (!me.showRetirees) {
+                        coords = [me.arenas[teamID].cx, me.arenas[teamID].cy];
+                    }
+                    else if (me.haveRetireeCoords()) {
+                        coords = me.projection([
+                            globals.graph["end"]["long"],
+                            globals.graph["end"]["lat"]
                         ]);
                     }
                     else {

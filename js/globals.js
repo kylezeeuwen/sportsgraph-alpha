@@ -12,21 +12,17 @@ var globals = {
         },
         start : {
             // brantford, ontario
-            //"lat" : 43.166,
-            //"long" : -80.25 
-            
+            //"lat" : 43.166, "long" : -80.25 
             // churchill, manitoba
-            //"lat" : 58.769,
-            //"long" : -94.169 
-            
+            //"lat" : 58.769, "long" : -94.169 
             // south tip of hudsons bay (aka middle of nowhere)
-            "lat" : 51.299,
-            "long" : -80.252 
+            "lat" : 51.299, "long" : -80.252 
         },
         end : {
-            // naples, florida
-            "lat" : 26.15,
-            "long" : -81.8  
+            // naples, florida (<3 to golf!)
+            //"lat" : 26.15, "long" : -81.8  
+            // top of florida (<3 to golf!)
+            "lat" : 31.349, "long" : -82.72  
         }
     } 
 };

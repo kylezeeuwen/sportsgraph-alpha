@@ -24,19 +24,27 @@
     
     <!-- HEADER -->
     <div id="header_wrap" class="outer">
-        <header class="inner">
-          <span id="project_title">NHL Trade Graph : </span>
-          <span id="current_year">{{currentYear}}</span>
+      <header class="inner">
+        <span id="project_title">NHL Trade Graph : </span>
+        <span id="current_year">{{currentYear}}</span>
 
-        </header>
-        <div id="control_panel">
-          <div id="speed-slider-label">Speed:</div>
-          <slider id="speed-slider" floor="0" ceiling="100" step="1" precision="0" ng-model="currentSpeed"></slider>
-        </div>
+      </header>
+      <div id="control_panel">
+        <div id="speed-slider-label">Speed:</div>
+        <slider id="speed-slider" floor="0" ceiling="100" step="1" precision="0" ng-model="currentSpeed"></slider>
+      </div>
     </div>
 
     <div id="main_content_wrap" class="outer">
-      <sportsgraph id="sportsgraph" current-year="currentYear" current-speed="currentSpeed" width="1200" height="550"/> 
+      <sportsgraph
+        id="sportsgraph"
+        show-rookies="showRookies"
+        show-retirees="showRetirees"
+        current-year="currentYear"
+        current-speed="currentSpeed"
+        width="1200"
+        height="550"
+      />
     </div>
     <!-- classes -->
 
