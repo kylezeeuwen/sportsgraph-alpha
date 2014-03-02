@@ -1,7 +1,6 @@
 function outerController($scope, league) {
     if (globals.debugF) { console.log("outerController Init called"); }
 
-    $scope.available = false;
     $scope.haveData = false;
     $scope.currentSpeed = 100;
 
@@ -23,7 +22,6 @@ function outerController($scope, league) {
             $scope.minSeason = parseInt(1997);
             $scope.maxSeason = parseInt(league.getMaxSeason());
             $scope.currentYear = $scope.minSeason;
-            $scope.available = true;
             $scope.haveData  = true;
         }
     });
