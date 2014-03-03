@@ -125,46 +125,18 @@ angular.module("sportsGraphDirective", []).directive(
 
                             //add hockey start image if this feature is enabled
                             if (me.haveRookieCoords()) {
-                                var startCoords = me.projection([
-                                    globals["graph"]["start"]["long"],
-                                    globals["graph"]["start"]["lat"]
-                                ]);
-
-                                var innerG = me.svg.append("svg:g")
-                                    .attr("class","start")
-                                    .attr("transform",
-                                        "translate(" + startCoords[0] + "," + startCoords[1] + ")"
-                                    );
-
-                                innerG.append("image")
-                                    .attr("xlink:href", "images/cradle.png")
-                                    .attr("width", 32)
-                                    .attr("height", 32);
-                                
-                                innerG.append("svg:title").text(
-                                    // would be better if I had their hometown
+                                me.addImage(
+                                    globals.graph.start.image,
+                                    me.getRookieCoords(),
                                     "This is where all rookies start from"
                                 );
                             }
                             
                             //add hockey end image if this feature is enabled
                             if (me.haveRetireeCoords()) {
-                                var coords = me.projection([
-                                    globals["graph"]["end"]["long"],
-                                    globals["graph"]["end"]["lat"]
-                                ]);
-
-                                var innerG = me.svg.append("svg:g")
-                                    .attr("class","end")
-                                    .attr("transform",
-                                        "translate(" + coords[0] + "," + coords[1] + ")");
-
-                                innerG.append("image")
-                                      .attr("xlink:href", "images/golfer1.png")
-                                      .attr("width", 32)
-                                      .attr("height", 32);
-                                
-                                innerG.append("svg:title").text(
+                                me.addImage(
+                                    globals.graph.end.image,
+                                    me.getRetireeCoords(),
                                     "This is where all retirees go to play golf"
                                 );
                             }
@@ -357,16 +329,42 @@ angular.module("sportsGraphDirective", []).directive(
                         });
 
                     // this is for all retirees
-                    node.exit().each( function(d) { 
+                    var nodeExit = node.exit().each( function(d) {
                         me.counts.exit++;
                         if (d.id in globals.trackThesePlayers) {
                             console.log("Saw player " + d.id + " exit league"); 
                         }
-                    }).remove();
-                
-                    me.force.start();
-                    me.transitionInProgress = true;
-                
+                    });
+
+                    // if there are retiring players and showRetirees is enabled
+                    // then animate the exit of the retirees and THEN start 
+                    // the normal season simulation
+                    if (me.showRetirees && me.counts.exit) {
+                        var activeExits = me.counts.exit;
+                        var coords = me.getRetireeCoords();
+                        nodeExit.transition()
+                            // make it ~ 1/3 time it takes for a full season animation 
+                            // (6000 * X / 100 / 3) 
+                            .duration(20 * me.currentSpeed) 
+                            .attr("transform", function(d) {
+                                var moveX = coords[0] - d['coord']['cur'][0] + 12;
+                                var moveY = coords[1] - d['coord']['cur'][1] + 12;
+                                return "translate(" + moveX + "," + moveY + ")";
+                            })
+                            .each("end", function (transition) {
+                                --activeExits;
+                                if (activeExits < 1) {
+                                    me.force.start();
+                                    me.transitionInProgress = true;
+                                }
+                            })
+                            .remove();
+                    }
+                    else {
+                        nodeExit.remove();
+                        me.force.start();
+                        me.transitionInProgress = true;
+                    }
                 };
                 
                 // For both Rookie and Retiree funtions:
@@ -513,6 +511,22 @@ angular.module("sportsGraphDirective", []).directive(
                         }
                     }
                     return overShotTheMark;
+                }
+
+                me.addImage = function (src, coords, title) {
+
+                    var innerG = me.svg.append("svg:g")
+                        .attr("class","start")
+                        .attr("transform",
+                            "translate(" + coords[0] + "," + coords[1] + ")"
+                        );
+
+                    innerG.append("image")
+                        .attr("xlink:href", src)
+                        .attr("width", 32)
+                        .attr("height", 32);
+                    
+                    innerG.append("svg:title").text(title);
                 }
             }
         

@@ -5,11 +5,7 @@ function outerController($scope, league) {
     $scope.currentSpeed = 100;
 
     $scope.showRookies = true;
-    
-    //XXX: to complete showRetirees feature requires:
-    // A) data model changes, or
-    // B) proper use of D3 data join (TODO)
-    $scope.showRetirees = false; 
+    $scope.showRetirees = true; 
 
     $scope.$watch(league.haveData, function(haveData) {
         if (globals.debugF) { console.log("In outerController watch haveData:" + haveData); }

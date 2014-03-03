@@ -16,6 +16,7 @@ var globals = {
         },
         transitionDelay: 700, // pause for X milliseconds between seasons
         start : { // All the rookies will start from this location
+            "image" : "images/cradle.png",
             // brantford, ontario
             //"lat" : 43.166, "long" : -80.25 
             // churchill, manitoba
@@ -24,6 +25,7 @@ var globals = {
             "lat" : 51.299, "long" : -80.252 
         },
         end : { // All the retirees will exit to this location (XXX: not implemented) 
+            "image" : "images/golfer1.png",
             // naples, florida (<3 to golf!)
             //"lat" : 26.15, "long" : -81.8  
             // top of florida (<3 to golf!)

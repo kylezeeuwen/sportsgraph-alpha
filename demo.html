@@ -4,7 +4,6 @@
     <meta charset="utf-8" />
     <title>Sport Graph NHL V1 - Beta</title>
 
-    <!-- <link rel="stylesheet" href="/lib/js/jquery-ui/jquery-ui-1.10.3/themes/base/jquery.ui.slider.css" /> XXX: what to do with this? -->
     <link rel="stylesheet" href="lib/js/angular-slider/angular-slider.min.css" />
     <link rel="stylesheet" type="text/css" media="screen" href="css/bootstrap.css">
     <link rel="stylesheet" type="text/css" media="screen" href="css/visualization.css">
@@ -23,19 +22,26 @@
   <body ng-controller="outerController">
     
     <!-- HEADER -->
-    <div id="header_wrap" class="outer">
+    <div id="header-wrap" class="outer">
       <header class="inner">
         <span id="project_title">NHL Trade Graph : </span>
         <span id="current_year">{{currentYear}}</span>
 
       </header>
-      <div id="control_panel">
+      <div id="control-panel">
        
         <button 
-          id="show-rookies" type="button" class="btn btn-primary" 
+          id="show-rookies" type="button" class="btn" 
           ng-model="showRookies" btn-checkbox btn-checkbox-true="true" btn-checkbox-false="false"
           title="Show/Hide transitions during the rookie year">
           Show Rookies
+        </button>
+        
+        <button 
+          id="show-retirees" type="button" class="btn" 
+          ng-model="showRetirees" btn-checkbox btn-checkbox-true="true" btn-checkbox-false="false"
+          title="Show/Hide transitions for retiring players">
+          Show Retirees
         </button>
 
         <div 
