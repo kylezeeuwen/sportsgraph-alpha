@@ -4,7 +4,7 @@
 
 /* pull in bootstrap glyphs but none of the other resources */
 [class^="icon-"], [class*=" icon-"] {
-    background-image: url("images/glyphicons-halflings.png");
+    background-image: url("../images/glyphicons-halflings.png");
 }
 
 /* taken from github stacked theme for consistency */
