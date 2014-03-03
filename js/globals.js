@@ -3,15 +3,16 @@
 var globals = {
     debugF : false, // Turn on for debugging to console.log
     debugT : false, // Turn on for debugging to console.log
-    trackThesePlayers : { // To get innerloop debugging for a player add them to this list
-    //   1458 : 1
+    trackThesePlayers : { // To get innerloop debugging for a player add them to this dict
+    //   <ID> : 1
     },
     graph : {
         sources : {
             world : 'data/world-50m.json',
-            //league : 'data/league.json' // full league. You cant handle the full league!!
-            league : 'data/league.haslettert.quartersize.json' // This is currently just right
+            league : 'data/league.json' // full league. Lot of data
+            //league : 'data/league.haslettert.quartersize.json' // This is currently just right
             //league : 'data/league.121record.json' // this one is really just for isolating bugs
+            //league : 'data/league.test.json' // Fake Mini set for testing
         },
         transitionDelay: 700, // pause for X milliseconds between seasons
         start : { // All the rookies will start from this location

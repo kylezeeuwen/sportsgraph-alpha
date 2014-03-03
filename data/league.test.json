@@ -1,0 +1,82 @@
+{
+    "arenas": {
+        "1": {
+            "arena_id": "1", 
+            "arena_name": "Pepsi Center", 
+            "end_season": "2012", 
+            "latitude": "39.74861", 
+            "longitude": "-105.00750", 
+            "start_season": "1997", 
+            "team_id": "1"
+        }, 
+        "2": {
+            "arena_id": "2", 
+            "arena_name": "United Center", 
+            "end_season": "2012", 
+            "latitude": "41.88056", 
+            "longitude": "-87.67417", 
+            "start_season": "1997", 
+            "team_id": "2"
+        }, 
+        "3": {
+            "arena_id": "3", 
+            "arena_name": "Nationwide Arena", 
+            "end_season": "2012", 
+            "latitude": "39.96928", 
+            "longitude": "-83.00611", 
+            "start_season": "1997", 
+            "team_id": "3"
+        }, 
+        "4": {
+            "arena_id": "4", 
+            "arena_name": "Scottrade Center", 
+            "end_season": "2012", 
+            "latitude": "38.62680", 
+            "longitude": "-90.20260", 
+            "start_season": "1997", 
+            "team_id": "4"
+        }, 
+        "5": {
+            "arena_id": "5", 
+            "arena_name": "TD Garden", 
+            "end_season": "2012", 
+            "latitude": "42.36630", 
+            "longitude": "-71.06223", 
+            "start_season": "1997", 
+            "team_id": "5"
+        }, 
+        "6": {
+            "arena_id": "6", 
+            "arena_name": "Bell Centre", 
+            "end_season": "2012", 
+            "latitude": "45.49611", 
+            "longitude": "-73.56944", 
+            "start_season": "1997", 
+            "team_id": "6"
+        }
+    },
+    "players": {
+        "1": { "dob": "1", "firstname": "1", "hometown": "1", "lastname": "1", "latitude": null, "longitude": null, "player_id": "1" }, 
+        "2": { "dob": "2", "firstname": "2", "hometown": "2", "lastname": "2", "latitude": null, "longitude": null, "player_id": "2" }, 
+        "3": { "dob": "3", "firstname": "3", "hometown": "3", "lastname": "3", "latitude": null, "longitude": null, "player_id": "3" }, 
+        "4": { "dob": "4", "firstname": "4", "hometown": "4", "lastname": "4", "latitude": null, "longitude": null, "player_id": "4" }, 
+        "5": { "dob": "5", "firstname": "5", "hometown": "5", "lastname": "5", "latitude": null, "longitude": null, "player_id": "5" }, 
+        "6": { "dob": "6", "firstname": "6", "hometown": "6", "lastname": "6", "latitude": null, "longitude": null, "player_id": "6" }
+    },
+    "roster": {
+        "1997": { "1": [ "1" ], "2" : [ "2" ], "3": [ "3" ], "4" : [ "4" ] },
+        "1998": { "1": [ "5" ], "2" : [ "2" ], "3": [ "4" ], "4" : [ "3" ], "6" : [ "6" ] }
+    },
+    "seasons": [
+        "1997", 
+        "1998"
+    ], 
+    "teams": {
+        "1": { "color": null, "shortname": null, "team_id": "1", "teamname": "1" }, 
+        "2": { "color": null, "shortname": null, "team_id": "2", "teamname": "2" }, 
+        "3": { "color": null, "shortname": null, "team_id": "3", "teamname": "3" }, 
+        "4": { "color": null, "shortname": null, "team_id": "4", "teamname": "4" }, 
+        "5": { "color": null, "shortname": null, "team_id": "5", "teamname": "5" }, 
+        "6": { "color": null, "shortname": null, "team_id": "6", "teamname": "6" }
+    }
+}

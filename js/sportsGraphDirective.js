@@ -68,9 +68,9 @@ angular.module("sportsGraphDirective", []).directive(
                 
                 me.w = me.width;
                 me.h = me.height;
-                me.fill = d3.scale.category20();
+                me.closeEnough = 0.5; //XXX: Move to config               
+                me.minTicksToGetHome = 50; //XXX: Move to config
                 me.activePlayers = [];
-                me.playerLastCoord = {};
                 
                 // Initialize the svg canvas, map overlay, and force overlay
                 //   RETURNS: null
@@ -78,7 +78,10 @@ angular.module("sportsGraphDirective", []).directive(
                     if (globals.debugF) { 
                         console.log("graph setupCanvas called"); 
                     }
-                    
+                   
+                    // auto color scheme
+                    me.fill = d3.scale.category20();
+
                     me.svg = d3.select('#' + iElement.attr('id')).append("svg")
                         .attr("width", me.w)
                         .attr("height", me.h);
@@ -181,88 +184,25 @@ angular.module("sportsGraphDirective", []).directive(
                     // Tick is repeatedly called after force.start() is called
                     // until force.stop() is called. In 'tick' we control the 
                     // movement of the player nodes from A to B
-                    // XXX: this is not really an appropriate use of force 
-                    // as I am no longer using gravity or alpha   
+                    // XXX: I am not sure if this is not really an appropriate use of force 
+                    // as I am no longer using gravity or alpha.
+                    // I could just use transitions() to animate movement, but then
+                    // I could not control speed. So, if speed feature is removed then
+                    // use of force directed layout should also be removed
                     me.force.on("tick", function(e) {
                         
-                        // make these configurable ?
-                        var closeEnough = 0.5;                
-                        var minTicksToGetHome = 100;
-
-                        // define variables outside loop to 
-                        // reduce required garbage collection
-                        var pos, xDiff, yDiff, xTotalDiff, yTotalDiff;
-                        var overShotTheMark, arenaInfo, id;
-                        var stillTransitioning = false;
-                        var numTransitioned = 0;
-                        me.activePlayers.forEach(function(player, i) {
-
-                            arenaInfo = me.arenas[player.arenaID];
-                            id = player.id;
-                   
-                            pos = me.playerLastCoord[id];
-                            xDiff = Math.abs(pos["dst"][0] - pos["cur"][0]);
-                            yDiff = Math.abs(pos["dst"][1] - pos["cur"][1]);
-                            
-                            xTotalDiff = pos["dst"][0] - pos["src"][0];
-                            yTotalDiff = pos["dst"][1] - pos["src"][1];
-
-                            overShotTheMark = me.detectOverShoot(pos);
-
-                            // is player at dst ?
-                            if (
-                                (xDiff > closeEnough || yDiff > closeEnough) 
-                                && !overShotTheMark
-                            ) {
-                                stillTransitioning = true;
-                                numTransitioned++;
-                                pos["cur"][0] += xTotalDiff * 
-                                    (me.currentSpeed * 0.01 / minTicksToGetHome); 
-                                pos["cur"][1] += yTotalDiff * 
-                                    (me.currentSpeed * 0.01 / minTicksToGetHome); 
-                            }
-                            else {
-                                pos["cur"] = pos["dst"].slice(0);
-                            }
-                   
-                            // debug feature
-                            if (id in globals.trackThesePlayers) {
-                                if (globals.debugF) { console.log(
-                                    "Tracked player %s TeamID %s loc: cur (%f,%f), src (%f,%f), dst (%f, %f)",
-                                    id, player.teamID, 
-                                    Math.round(me.playerLastCoord[id]["cur"][0]), 
-                                    Math.round(me.playerLastCoord[id]["cur"][1]), 
-                                    Math.round(me.playerLastCoord[id]["src"][0]), 
-                                    Math.round(me.playerLastCoord[id]["src"][1]), 
-                                    Math.round(me.playerLastCoord[id]["dst"][0]), 
-                                    Math.round(me.playerLastCoord[id]["dst"][1])
-                                )};
-                            }
-                        });
+                        me.stillTransitioning = false;
+                        me.numTransitioned = 0;
+                        me.svg.selectAll("circle.node").each(me.computeNewCoord);
                         if (globals.debugF) { 
                             console.log(
                                 "%s tick %d players transitioned", 
                                 me.currentYear, 
-                                numTransitioned
+                                me.numTransitioned
                             );
                         }
 
-                        me.svg.selectAll("circle.node")
-                            .attr("cx", function(d) { 
-                                return me.playerLastCoord[d.id]["cur"][0]; 
-                            })
-                            .attr("cy", function(d) { 
-                                return me.playerLastCoord[d.id]["cur"][1]; 
-                            })
-                            .style("fill", function(d) { 
-                                return me.arenas[d.arenaID].fill; 
-                            })
-                            .style("stroke", function(d) { 
-                                return d3.rgb(
-                                    me.arenas[d.arenaID].fill).darker(2); 
-                            });
-                    
-                        if (!stillTransitioning || me.tickCount > 1000) {
+                        if (!me.stillTransitioning || me.tickCount > 1000) {
                             if (globals.debugF) { console.log(
                                 "force.stop" +
                                 " seasonOver " + me.currentYear +
@@ -318,48 +258,47 @@ angular.module("sportsGraphDirective", []).directive(
                 
                     me.tickCount = 0;
                     me.activePlayers = [];
-                    me.force.nodes(me.activePlayers);
-                    var roster = league.getRoster(curSeason);
+                    
+                    // At the beginning of the new season
+                    // record where player ended last season
+                    var previousLocations = {};
+                    me.svg.selectAll(".node").each( function (d) {
+                            previousLocations[d.id] = d.coord["dst"].slice();
+                    });
 
+                    var roster = league.getRoster(curSeason);
                     for (var teamID in roster) {
                         for (var i = 0; i < roster[teamID].length; i++) {
                             var id = roster[teamID][i];
+                            
+                            var curCoords;
+                            if (id in previousLocations) {
+                                curCoords = previousLocations[id].slice(0);
+                            }
+                            else {
+                                curCoords = me.getRookieCoords(teamID);
+                            }
+
                             var player = {
                                 'id' : id,
-                                'fill' : me.arenas[teamID].fill,
                                 'teamID'  : teamID,
                                 //XXX: in true model the arena should be a 
                                 // function of the season and the team 
                                 // (teams sometimes move)
-                                'arenaID' : teamID 
-                            };
-                
-                            // add new player or update existing players
-                            if (!(player.id in me.playerLastCoord)) {
-
-                                var coords = me.getRookieCoords(teamID);
-                                me.playerLastCoord[player.id] = {
-                                    'src' : coords,
-                                    'cur' : coords.slice(0), //clone!
+                                'arenaID' : teamID,
+                                'coord' : {
+                                    'src' : curCoords,
+                                    'cur' : curCoords.slice(0), //clone
                                     'dst' : [
                                         me.arenas[teamID].cx, 
                                         me.arenas[teamID].cy
                                     ]
-                                };
-                            }
-                            else {
-                                var record = me.playerLastCoord[player.id]
-                                // i am starting from where I currently am
-                                record["src"] = record["cur"].slice(0);
-                                
-                                // i am moving to the arena of my current team
-                                record["dst"] = [
-                                    me.arenas[teamID].cx, 
-                                    me.arenas[teamID].cy
-                                ];
-
-                                //XXX: Add some suppress right here to say 
-                                // NOT TRANSITIONING THIS YEAR
+                                }
+                            };
+                            
+                            if (player['coord']['src'][0] == player['coord']['dst'][0] &&
+                                player['coord']['src'][1] == player['coord']['dst'][1]) {
+                                player['dormant'] = true;
                             }
                 
                             if (id in globals.trackThesePlayers) {
@@ -373,11 +312,6 @@ angular.module("sportsGraphDirective", []).directive(
                             me.activePlayers.push(player);
                         }
                     }
-                
-                    me.counts = {
-                        "enter"  : 0,
-                        "exit"   : 0
-                    };
                     
                     //node is the D3 data join for players.
                     // node.enter() yeilds arriving players, 
@@ -387,36 +321,42 @@ angular.module("sportsGraphDirective", []).directive(
                     // NB links may get out of date. search "D3 constancy":
                     //  summary: http://bost.ocks.org/mike/constancy/
                     //  source: https://github.com/mbostock/bost.ocks.org/blob/gh-pages/mike/constancy/index.html
-                
+                    me.counts = { 'enter' : 0, 'exit' : 0 };
+
                     me.force.nodes(me.activePlayers);
                     var node = me.svg.selectAll(".node").data(
                         me.force.nodes(), 
                         function(d) { return d.id;}
                     );
                 
-                    node.enter().append("svg:circle")
-                        .each( function(d) { 
+                    node.enter()
+                        .append("svg:circle")
+                        .each( function(d) {
                             me.counts.enter++;
+                            d.rookieSeason = curSeason;
                             if (d.id in globals.trackThesePlayers) {
                                 console.log(
                                     "Saw player " + d.id + " enter league"); 
                             }
                         })
                         .attr("class", "node")
-                        .attr("cx", function(d) { 
-                            return me.playerLastCoord[d.id]["src"][0]; 
-                        })
-                        .attr("cy", function(d) { 
-                            return me.playerLastCoord[d.id]["src"][1]; 
-                        })
+                        .attr("cx", function(d) { return d['coord']['src'][0]; })
+                        .attr("cy", function(d) { return d['coord']['src'][1]; })
                         .attr("r", 5)
-                        .style("fill", function(d) { return d.fill; })
-                        .style("stroke", function(d) { 
-                            return d3.rgb(d.fill).darker(2); 
-                        })
                         .style("stroke-width", 1.5)
                         .append("svg:title").text(function(d) { return d.id });
-                    
+                   
+                    // this is for all rookie and veteran players
+                    // update the color as the team may have changed
+                    node.style("fill", function(d) { 
+                            return me.arenas[d.arenaID].fill; 
+                        })
+                        .style("stroke", function(d) { 
+                            return d3.rgb(
+                                me.arenas[d.arenaID].fill).darker(2); 
+                        });
+
+                    // this is for all retirees
                     node.exit().each( function(d) { 
                         me.counts.exit++;
                         if (d.id in globals.trackThesePlayers) {
@@ -445,8 +385,7 @@ angular.module("sportsGraphDirective", []).directive(
                 me.haveRookieCoords = function() {
                     return (
                         typeof(globals["graph"]) != "undefined" && 
-                        typeof(globals["graph"]["start"]) != "undefined" &&
-                        me.showRookies // user configurable
+                        typeof(globals["graph"]["start"]) != "undefined"
                     );
                 };
                 
@@ -455,8 +394,7 @@ angular.module("sportsGraphDirective", []).directive(
                 me.haveRetireeCoords = function() {
                     return (
                         typeof(globals["graph"]) != "undefined" && 
-                        typeof(globals["graph"]["end"]) != "undefined" &&
-                        me.showRetirees // user configurable
+                        typeof(globals["graph"]["end"]) != "undefined"
                     );
                 };
 
@@ -503,6 +441,51 @@ angular.module("sportsGraphDirective", []).directive(
                     }
                     return coords;
                 };
+
+                me.computeNewCoord = function (d) {
+                    if (!d['dormant']) {
+                        var pos = d['coord'];
+                        var xDiff = Math.abs(pos["dst"][0] - pos["cur"][0]);
+                        var yDiff = Math.abs(pos["dst"][1] - pos["cur"][1]);
+                        
+                        var xTotalDiff = pos["dst"][0] - pos["src"][0];
+                        var yTotalDiff = pos["dst"][1] - pos["src"][1];
+        
+                        var overShotTheMark = me.detectOverShoot(pos);
+        
+                        if (
+                            (xDiff > me.closeEnough || yDiff > me.closeEnough) 
+                            && !overShotTheMark
+                        ) {
+                            me.stillTransitioning = true;
+                            me.numTransitioned++;
+                            pos["cur"][0] += xTotalDiff * 
+                                (me.currentSpeed * 0.01 / me.minTicksToGetHome); 
+                            pos["cur"][1] += yTotalDiff * 
+                                (me.currentSpeed * 0.01 / me.minTicksToGetHome); 
+                        }
+                        else {
+                            pos["cur"] = pos["dst"].slice(0);
+                        }
+        
+                        this.setAttribute('cx', pos["cur"][0]);
+                        this.setAttribute('cy', pos["cur"][1]);
+        
+                        // debug feature
+                        if (d.id in globals.trackThesePlayers) {
+                            if (globals.debugF) { console.log(
+                                "Tracked player %s TeamID %s loc: cur (%f,%f), src (%f,%f), dst (%f, %f)",
+                                d.id, d.teamID, 
+                                Math.round(pos["cur"][0]), 
+                                Math.round(pos["cur"][1]), 
+                                Math.round(pos["src"][0]), 
+                                Math.round(pos["src"][1]), 
+                                Math.round(pos["dst"][0]), 
+                                Math.round(pos["dst"][1])
+                            )};
+                        }
+                    }
+                }
 
                 // When the user adjusts the speed mid simulation 
                 // players sometimes 'over shoot the mark',
