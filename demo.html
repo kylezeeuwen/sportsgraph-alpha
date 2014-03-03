@@ -33,10 +33,17 @@
        
         <button 
           id="show-rookies" type="button" class="btn btn-primary" 
-          ng-model="showRookies" btn-checkbox btn-checkbox-true="true" btn-checkbox-false="false">
+          ng-model="showRookies" btn-checkbox btn-checkbox-true="true" btn-checkbox-false="false"
+          title="Show/Hide transitions during the rookie year">
           Show Rookies
         </button>
-        <div id="speed-slider-label">Speed:</div>
+
+        <div 
+          id="speed-slider-label"
+          title="Control the speed of transitions">
+          Speed:
+        </div>
+
         <slider id="speed-slider" floor="0" ceiling="100" step="1" precision="0" ng-model="currentSpeed"></slider>
         
       </div>
