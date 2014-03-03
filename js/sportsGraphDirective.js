@@ -128,6 +128,7 @@ angular.module("sportsGraphDirective", []).directive(
                                 me.addImage(
                                     globals.graph.start.image,
                                     me.getRookieCoords(),
+                                    32,
                                     "This is where all rookies start from"
                                 );
                             }
@@ -137,6 +138,7 @@ angular.module("sportsGraphDirective", []).directive(
                                 me.addImage(
                                     globals.graph.end.image,
                                     me.getRetireeCoords(),
+                                    32,
                                     "This is where all retirees go to play golf"
                                 );
                             }
@@ -343,12 +345,12 @@ angular.module("sportsGraphDirective", []).directive(
                         var activeExits = me.counts.exit;
                         var coords = me.getRetireeCoords();
                         nodeExit.transition()
-                            // make it ~ 1/3 time it takes for a full season animation 
-                            // (6000 * X / 100 / 3) 
-                            .duration(20 * me.currentSpeed) 
+                            // make it so at full speed it takes 2 seconds 
+                            .ease('linear') 
+                            .duration(200000 / me.currentSpeed) 
                             .attr("transform", function(d) {
-                                var moveX = coords[0] - d['coord']['cur'][0] + 12;
-                                var moveY = coords[1] - d['coord']['cur'][1] + 12;
+                                var moveX = coords[0] - d['coord']['cur'][0];
+                                var moveY = coords[1] - d['coord']['cur'][1];
                                 return "translate(" + moveX + "," + moveY + ")";
                             })
                             .each("end", function (transition) {
@@ -513,18 +515,18 @@ angular.module("sportsGraphDirective", []).directive(
                     return overShotTheMark;
                 }
 
-                me.addImage = function (src, coords, title) {
+                me.addImage = function (src, coords, size, title) {
 
                     var innerG = me.svg.append("svg:g")
                         .attr("class","start")
                         .attr("transform",
-                            "translate(" + coords[0] + "," + coords[1] + ")"
+                            "translate(" + (coords[0] - size/2) + "," + (coords[1] - size/2) + ")"
                         );
 
                     innerG.append("image")
                         .attr("xlink:href", src)
-                        .attr("width", 32)
-                        .attr("height", 32);
+                        .attr("width", size)
+                        .attr("height", size);
                     
                     innerG.append("svg:title").text(title);
                 }

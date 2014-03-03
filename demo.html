@@ -34,6 +34,7 @@
           id="show-rookies" type="button" class="btn" 
           ng-model="showRookies" btn-checkbox btn-checkbox-true="true" btn-checkbox-false="false"
           title="Show/Hide transitions during the rookie year">
+          <i class="{{showRookies && 'icon-ok' || 'icon-remove' }}"></i> 
           Show Rookies
         </button>
         
@@ -41,6 +42,7 @@
           id="show-retirees" type="button" class="btn" 
           ng-model="showRetirees" btn-checkbox btn-checkbox-true="true" btn-checkbox-false="false"
           title="Show/Hide transitions for retiring players">
+          <i class="{{showRetirees && 'icon-ok' || 'icon-remove' }}"></i> 
           Show Retirees
         </button>
 
