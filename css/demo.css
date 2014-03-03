@@ -1,4 +1,8 @@
 
+/* required for angular bootstrap */
+.nav, .pagination, .carousel, .panel-title a { cursor: pointer; }
+
+/* taken from github stacked theme for consistency */
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
 a, abbr, acronym, address, big, cite, code,
@@ -75,5 +79,12 @@ time, mark, audio, video {
    display: inline-block;
    margin-left: 10px;
    margin-right: 10px;
-   max-width: 90%;
+   max-width: 80%;
 }
+
+#show-rookies {
+    margin-left: 5px;    
+    margin-right: 5px;
+    margin-bottom: 7px;
+}
+

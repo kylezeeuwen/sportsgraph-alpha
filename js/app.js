@@ -1,6 +1,7 @@
 angular.module('sportGraph', [
     'leagueDataService',
     'uiSlider',
+    'ui.bootstrap',
     'sportsGraphDirective'
 ]).run( function() {
 

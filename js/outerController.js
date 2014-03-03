@@ -4,7 +4,6 @@ function outerController($scope, league) {
     $scope.haveData = false;
     $scope.currentSpeed = 100;
 
-    //XXX: TODO expose showRookies as toggle button in View
     $scope.showRookies = true;
     
     //XXX: to complete showRetirees feature requires:

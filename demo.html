@@ -5,15 +5,15 @@
     <title>Sport Graph NHL V1 - Beta</title>
 
     <!-- <link rel="stylesheet" href="/lib/js/jquery-ui/jquery-ui-1.10.3/themes/base/jquery.ui.slider.css" /> XXX: what to do with this? -->
-    <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css" />
     <link rel="stylesheet" href="lib/js/angular-slider/angular-slider.min.css" />
+    <link rel="stylesheet" type="text/css" media="screen" href="css/bootstrap.css">
     <link rel="stylesheet" type="text/css" media="screen" href="css/visualization.css">
     <link rel="stylesheet" type="text/css" media="screen" href="css/demo.css">
 
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/angularjs/1.1.5/angular.min.js"></script>
+    <script type="text/javascript" src="http://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.10.0.min.js"></script>
     <script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.10.2.js"></script>
-    <script type="text/javascript" src="http://code.jquery.com/ui/1.10.4/jquery-ui.js"></script>
     <script type="text/javascript" src="http://d3js.org/topojson.v1.min.js"></script>
    
     <script type="text/javascript" src="lib/js/angular-slider/angular-slider.min.js"></script>
@@ -30,8 +30,15 @@
 
       </header>
       <div id="control_panel">
+       
+        <button 
+          id="show-rookies" type="button" class="btn btn-primary" 
+          ng-model="showRookies" btn-checkbox btn-checkbox-true="true" btn-checkbox-false="false">
+          Show Rookies
+        </button>
         <div id="speed-slider-label">Speed:</div>
         <slider id="speed-slider" floor="0" ceiling="100" step="1" precision="0" ng-model="currentSpeed"></slider>
+        
       </div>
     </div>
 
