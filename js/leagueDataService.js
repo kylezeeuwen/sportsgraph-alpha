@@ -1,49 +1,69 @@
 angular.module('leagueDataService', []).factory('league', function ($http) {
     if (globals.debugF) { console.log("league Init called"); }
     
-    var l = {
+    var me = {
         dataSource : globals.graph.sources.league,
-        data : {},
-        computed : {}
+        data : {}
     };
-   
-    l.bHaveData = false;
-    l.haveData = function(d) {
-        if (typeof(d) == "boolean") { l.bHaveData = d; }
-        return l.bHaveData;
+
+    me.bHaveData = false;
+    me.haveData = function(d) {
+        if (typeof(d) == "boolean") { me.bHaveData = d; }
+        return me.bHaveData;
     };
  
-    l.bLoadingData = true; //N.B. Set to true as this module loads on init 
-    l.loadingData = function(d) {
-        if (typeof(d) == "boolean") { l.bLoadingData = d; }
-        return l.bLoadingData;
+    me.bLoadingData = true; // initial value true as this module loads on init 
+    me.loadingData = function(d) {
+        if (typeof(d) == "boolean") { me.bLoadingData = d; }
+        return me.bLoadingData;
     };
 
+    me.getLeagueData = function() { return me.leagueData; };
+    me.loadLeagueData = function() {
+        me.loadingData(true);
+        me.haveData(false);
 
-    l.getLeagueData = function() { return l.leagueData; };
-    l.loadLeagueData = function() {
-        l.loadingData(true);
-        l.haveData(false);
-        $http.get(l.dataSource)
-             .success(function (data, status, headers, config) {
-            l.leagueData = data;
-            
-            l.haveData(true);
-            l.loadingData(false);
-            
-        });
+        $http.get(me.dataSource)
+            .success(function (data, status, headers, config) {
+                me.leagueData = data;
+                me.haveData(true);
+                me.loadingData(false);
+            })
+            .error(function (data, status, headers, config) {
+                //XXX: This is a nono (HTML in a service!!)
+                // But this is just a demo ... lets not take ourselves
+                // too sersiously ...
+                title = 
+                    'Fail to get league data from URL ' + 
+                    me.dataSource
+                    + ' : ' + status;
+
+                var dialog = $(
+                    "<div class='dialog' title='" + title + "'</div>"
+                ).dialog({
+                    resizable: false,
+                    height: 140,
+                    width: 850,
+                    buttons: {
+                        "That sucks": function() {
+                            $( this ).dialog( "close" );
+                        }
+                    }
+                });
+                $('body').append(dialog);
+            })
     };
 
-    l.getSeasons = function() {
-        if (!l.haveData()) {
+    me.getSeasons = function() {
+        if (!me.haveData()) {
             return null;
         }
 
-        return l.leagueData.seasons.sort();
+        return me.leagueData.seasons.sort();
     }
 
-    l.getNextSeason = function(curSeason) {
-        var seasons = l.getSeasons();
+    me.getNextSeason = function(curSeason) {
+        var seasons = me.getSeasons();
         for (var i = 0; i < seasons.length; i++) {
             if (seasons[i] == curSeason) {
                 if (i + 1 < seasons.length) {
@@ -57,68 +77,52 @@ angular.module('leagueDataService', []).factory('league', function ($http) {
         return null;
     }
 
-    l.getMinSeason = function() {
-        if (!l.haveData()) {
+    me.getMinSeason = function() {
+        if (!me.haveData()) {
             return null;
         }
  
-        if ('minSeason' in l.computed) {
-            return l.computed.minSeason;
-        }
-        var seasons = l.leagueData.seasons;
-        for (var i = 0; i < seasons.length; i++) {
-            if (!('minSeason' in l.computed) || l.computed.minSeason > seasons[i]) {
-                l.computed.minSeason = seasons[i];
-            }
-        }
-        
-        return l.computed.minSeason; 
+        var seasons = me.getSeasons();
+        return seasons[0];
     }
     
-    l.getMaxSeason = function() {
-        if (!l.haveData()) {
-            return null;
-        }
- 
-        if ('maxSeason' in l.computed) {
-            return l.computed.maxSeason;
-        }
-        var seasons = l.leagueData.seasons;
-        for (var i = 0; i < seasons.length; i++) {
-            if (!('maxSeason' in l.computed) || l.computed.maxSeason < seasons[i]) {
-                l.computed.maxSeason = seasons[i];
-            }
-        }
-        
-        return l.computed.maxSeason; 
-    }
-
-    l.getRoster = function(season) {
-        if (!l.haveData()) {
+    me.getMaxSeason = function() {
+        if (!me.haveData()) {
             return null;
         }
         
-        return l.leagueData.roster[season]; 
+        var seasons = me.getSeasons();
+        return seasons[seasons.length - 1];
     }
 
-    l.getArenas = function() {
-        if (!l.haveData()) {
+    me.getRoster = function(season) {
+        if (!me.haveData()) {
             return null;
         }
         
-        return l.leagueData.arenas;
+        return me.leagueData.roster[season]; 
     }
 
-    l.getArena = function(teamID, season) {
-        if (!l.haveData()) {
+    me.getArenas = function() {
+        if (!me.haveData()) {
+            return null;
+        }
+        
+        return me.leagueData.arenas;
+    }
+
+    me.getArena = function(teamID, season) {
+        if (!me.haveData()) {
             return null;
         }
 
         //XXX: Data model limition. Currently I only have one arena / team
-        return l.leagueData.arenas[teamID];
+        return me.leagueData.arenas[teamID];
     }
 
-    l.loadLeagueData();
+    // Initiate the data load
+    // XXX: Should this be done in app.config ?
+    me.loadLeagueData();
 
-    return l;
+    return me;
 });
