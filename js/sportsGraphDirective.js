@@ -216,12 +216,23 @@ angular.module("sportsGraphDirective", []).directive(
                 // to x,y positions and assign a color to this arena
                 me.assignArenaCoordinates = function() { 
                     me.arenas = league.getArenas();
+                    me.teams = league.getTeams();
                     for (var arenaID in me.arenas) {
                         var arena = me.arenas[arenaID];
                         var coords = me.projection([arena['longitude'], arena['latitude']]);
                         arena.cx = coords[0];
                         arena.cy = coords[1];
                         arena.fill = me.fill(arenaID);
+
+                        var team = me.teams[arena.team_id];
+                        if ('logo' in team) {
+                            me.addImage(
+                                team.logo,
+                                coords,
+                                32,
+                                arena.arena_name
+                            );
+                        }
                     }
                 };
                 
@@ -313,7 +324,8 @@ angular.module("sportsGraphDirective", []).directive(
                                     "Saw player " + d.id + " enter league"); 
                             }
                         })
-                        .attr("class", "node")
+                        .attr("class", "node z-sortable")
+                        .attr("z-index", "10")
                         .attr("cx", function(d) { return d['coord']['src'][0]; })
                         .attr("cy", function(d) { return d['coord']['src'][1]; })
                         .attr("r", 5)
@@ -356,6 +368,7 @@ angular.module("sportsGraphDirective", []).directive(
                             .each("end", function (transition) {
                                 --activeExits;
                                 if (activeExits < 1) {
+                                    me.sortNodes(); // this ensures correcet z ordering
                                     me.force.start();
                                     me.transitionInProgress = true;
                                 }
@@ -364,11 +377,26 @@ angular.module("sportsGraphDirective", []).directive(
                     }
                     else {
                         nodeExit.remove();
+                        me.sortNodes(); // this ensures correct z ordering
+
                         me.force.start();
                         me.transitionInProgress = true;
                     }
                 };
-                
+               
+                // SVG does not support z-index attribute (controlling what goes on top)
+                // instead it relies on a 'last goes on top' based on the ordering of elements in the DOM
+                // D3 provides an ordering function which we use here. But since our logos are
+                // not part of the D3 data bind, the logos show up as undefined
+                // we want logos on top, so if you encounter undefined then sort to the end (makingthe logos on top)
+                me.sortNodes = function () {
+                    me.svg.selectAll(".z-sortable").sort( function (a,b) {
+                        if (typeof(a) == 'undefined') { return 1; }
+                        if (typeof(b) == 'undefined') { return -1; }
+                        return 0;
+                    });
+                };
+
                 // For both Rookie and Retiree funtions:
                 // Determine the coordinates for a rookie to start from
                 // Three options:
@@ -518,13 +546,15 @@ angular.module("sportsGraphDirective", []).directive(
                 me.addImage = function (src, coords, size, title) {
 
                     var innerG = me.svg.append("svg:g")
-                        .attr("class","start")
+                        .attr("class","logo z-sortable")
+                        .attr("class","logo z-sortable")
                         .attr("transform",
                             "translate(" + (coords[0] - size/2) + "," + (coords[1] - size/2) + ")"
                         );
 
                     innerG.append("image")
                         .attr("xlink:href", src)
+                        .attr("z-index", 100)
                         .attr("width", size)
                         .attr("height", size);
                     

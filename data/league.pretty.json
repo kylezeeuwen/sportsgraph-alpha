@@ -22,8 +22,11 @@
             "arena_id": "11", 
             "arena_name": "Honda Center", 
             "end_season": "2012", 
-            "latitude": "33.80778", 
-            "longitude": "-117.87667", 
+            "comment" : "I moved the stadium for aesthetics",
+            "real_latitude": "33.80778", 
+            "real_longitude": "-117.87667", 
+            "latitude": "33.4", 
+            "longitude": "-117.0", 
             "start_season": "1995", 
             "team_id": "11"
         }, 
@@ -58,8 +61,11 @@
             "arena_id": "15", 
             "arena_name": "Nassau Veterans Memorial Colis", 
             "end_season": "2012", 
-            "latitude": "40.72278", 
-            "longitude": "-73.59056", 
+            "comment" : "I moved the stadium for aesthetics",
+            "real_latitude": "40.72278", 
+            "real_longitude": "-73.59056", 
+            "latitude": "41.3", 
+            "longitude": "-72.9", 
             "start_season": "1995", 
             "team_id": "15"
         }, 
@@ -41517,181 +41523,211 @@
             "color": null, 
             "shortname": null, 
             "team_id": "1", 
-            "teamname": "avalanche"
+            "teamname": "avalanche",
+            "logo": "images/logos/avalanche.png"
         }, 
         "10": {
             "color": null, 
             "shortname": null, 
             "team_id": "10", 
-            "teamname": "devils"
+            "teamname": "devils",
+            "logo": "images/logos/devils.png"
         }, 
         "11": {
             "color": null, 
             "shortname": null, 
             "team_id": "11", 
-            "teamname": "ducks"
+            "teamname": "ducks",
+            "logo": "images/logos/ducks.png"
         }, 
         "12": {
             "color": null, 
             "shortname": null, 
             "team_id": "12", 
-            "teamname": "flames"
+            "teamname": "flames",
+            "logo": "images/logos/flames.png"
         }, 
         "13": {
             "color": null, 
             "shortname": null, 
             "team_id": "13", 
-            "teamname": "flyers"
+            "teamname": "flyers",
+            "logo": "images/logos/flyers.png"
         }, 
         "14": {
             "color": null, 
             "shortname": null, 
             "team_id": "14", 
-            "teamname": "hurricanes"
+            "teamname": "hurricanes",
+            "logo": "images/logos/hurricanes.png"
         }, 
         "15": {
             "color": null, 
             "shortname": null, 
             "team_id": "15", 
-            "teamname": "islanders"
+            "teamname": "islanders",
+            "logo": "images/logos/islanders.png"
         }, 
         "16": {
             "color": null, 
             "shortname": null, 
             "team_id": "16", 
-            "teamname": "jets"
+            "teamname": "jets",
+            "logo": "images/logos/jets.png"
         }, 
         "17": {
             "color": null, 
             "shortname": null, 
             "team_id": "17", 
-            "teamname": "kings"
+            "teamname": "kings",
+            "logo": "images/logos/kings.png"
         }, 
         "18": {
             "color": null, 
             "shortname": null, 
             "team_id": "18", 
-            "teamname": "lightning"
+            "teamname": "lightning",
+            "logo": "images/logos/lightning.png"
         }, 
         "19": {
             "color": null, 
             "shortname": null, 
             "team_id": "19", 
-            "teamname": "mapleleafs"
+            "teamname": "mapleleafs",
+            "logo": "images/logos/mapleleafs.png"
         }, 
         "2": {
             "color": null, 
             "shortname": null, 
             "team_id": "2", 
-            "teamname": "blackhawks"
+            "teamname": "blackhawks",
+            "logo": "images/logos/blackhawks.png"
         }, 
         "20": {
             "color": null, 
             "shortname": null, 
             "team_id": "20", 
-            "teamname": "oilers"
+            "teamname": "oilers",
+            "logo": "images/logos/oilers.png"
         }, 
         "21": {
             "color": null, 
             "shortname": null, 
             "team_id": "21", 
-            "teamname": "panthers"
+            "teamname": "panthers",
+            "logo": "images/logos/panthers.png"
         }, 
         "22": {
             "color": null, 
             "shortname": null, 
             "team_id": "22", 
-            "teamname": "penguins"
+            "teamname": "penguins",
+            "logo": "images/logos/penguins.png"
         }, 
         "23": {
             "color": null, 
             "shortname": null, 
             "team_id": "23", 
-            "teamname": "predators"
+            "teamname": "predators",
+            "logo": "images/logos/predators.png"
         }, 
         "24": {
             "color": null, 
             "shortname": null, 
             "team_id": "24", 
-            "teamname": "rangers"
+            "teamname": "rangers",
+            "logo": "images/logos/rangers.png"
         }, 
         "25": {
             "color": null, 
             "shortname": null, 
             "team_id": "25", 
-            "teamname": "redwings"
+            "teamname": "redwings",
+            "logo": "images/logos/redwings.png"
         }, 
         "26": {
             "color": null, 
             "shortname": null, 
             "team_id": "26", 
-            "teamname": "sabres"
+            "teamname": "sabres",
+            "logo": "images/logos/sabres.png"
         }, 
         "27": {
             "color": null, 
             "shortname": null, 
             "team_id": "27", 
-            "teamname": "senators"
+            "teamname": "senators",
+            "logo": "images/logos/senators.png"
         }, 
         "28": {
             "color": null, 
             "shortname": null, 
             "team_id": "28", 
-            "teamname": "sharks"
+            "teamname": "sharks",
+            "logo": "images/logos/sharks.png"
         }, 
         "29": {
             "color": null, 
             "shortname": null, 
             "team_id": "29", 
-            "teamname": "stars"
+            "teamname": "stars",
+            "logo": "images/logos/stars.png"
         }, 
         "3": {
             "color": null, 
             "shortname": null, 
             "team_id": "3", 
-            "teamname": "bluejackets"
+            "teamname": "bluejackets",
+            "logo": "images/logos/bluejackets.png"
         }, 
         "30": {
             "color": null, 
             "shortname": null, 
             "team_id": "30", 
-            "teamname": "wild"
+            "teamname": "wild",
+            "logo": "images/logos/wild.png"
         }, 
         "4": {
             "color": null, 
             "shortname": null, 
             "team_id": "4", 
-            "teamname": "blues"
+            "teamname": "blues",
+            "logo": "images/logos/blues.png"
         }, 
         "5": {
             "color": null, 
             "shortname": null, 
             "team_id": "5", 
-            "teamname": "bruins"
+            "teamname": "bruins",
+            "logo": "images/logos/bruins.png"
         }, 
         "6": {
             "color": null, 
             "shortname": null, 
             "team_id": "6", 
-            "teamname": "canadiens"
+            "teamname": "canadiens",
+            "logo": "images/logos/canadiens.png"
         }, 
         "7": {
             "color": null, 
             "shortname": null, 
             "team_id": "7", 
-            "teamname": "canucks"
+            "teamname": "canucks",
+            "logo": "images/logos/canucks.png"
         }, 
         "8": {
             "color": null, 
             "shortname": null, 
             "team_id": "8", 
-            "teamname": "capitals"
+            "teamname": "capitals",
+            "logo": "images/logos/capitals.png"
         }, 
         "9": {
             "color": null, 
             "shortname": null, 
             "team_id": "9", 
-            "teamname": "coyotes"
+            "teamname": "coyotes",
+            "logo": "images/logos/coyotes.png"
         }
     }
 }

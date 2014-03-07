@@ -9,7 +9,7 @@ var globals = {
     graph : {
         sources : {
             world : 'data/world-50m.json',
-            league : 'data/league.json' // full league. Lot of data
+            league : 'data/league.pretty.json' // full league. Lot of data
             //league : 'data/league.haslettert.quartersize.json' // This is currently just right
             //league : 'data/league.121record.json' // this one is really just for isolating bugs
             //league : 'data/league.test.json' // Fake Mini set for testing

@@ -119,6 +119,14 @@ angular.module('leagueDataService', []).factory('league', function ($http) {
         //XXX: Data model limition. Currently I only have one arena / team
         return me.leagueData.arenas[teamID];
     }
+    
+    me.getTeams = function() {
+        if (!me.haveData()) {
+            return null;
+        }
+        
+        return me.leagueData.teams;
+    }
 
     // Initiate the data load
     // XXX: Should this be done in app.config ?
