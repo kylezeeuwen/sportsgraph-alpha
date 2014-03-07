@@ -75,6 +75,7 @@ angular.module("sportsGraphDirective", []).directive(
                 me.closeEnough = 0.5; //XXX: Move to config               
                 me.minTicksToGetHome = 50; //XXX: Move to config
                 me.activePlayers = [];
+                me.previousLocations = {};
                 
                 // Initialize the svg canvas, map overlay, and force overlay
                 //   RETURNS: null
@@ -262,16 +263,23 @@ angular.module("sportsGraphDirective", []).directive(
                 
                     me.tickCount = 0;
                     me.activePlayers = [];
-                    
-                    // At the beginning of the new season
-                    // record where player ended last season
-                    var previousInfo = {};
-                    me.svg.selectAll(".player").each( function (d) {
-                            previousInfo[d.id] = {
-                                "location" : d.coord["dst"].slice(),
-                                "team_id" : d.team_id
-                            };
-                    });
+                   
+                    // this will select only league veterans
+                    me.svg.selectAll(".player")
+                        // drop z-sortable (the sort is only necessary once on entry)
+                        .attr("class","player") 
+                        // use the previous season team logo
+                        // this shows where the player is coming from, not where he is going
+                        .attr("xlink:href", function(d) {
+                            var team = me.teams[d.team_id];
+                            return team.logo;
+                        })
+                        .each( function (d) {
+                            me.counts.update++;
+                            // At the beginning of the new season
+                            // record where player ended last season
+                            me.previousLocations[d.id] = d.coord["dst"].slice();
+                        });
 
                     var roster = league.getRoster(curSeason);
                     var player_size = globals.image.player_size;
@@ -279,20 +287,17 @@ angular.module("sportsGraphDirective", []).directive(
                         for (var i = 0; i < roster[teamID].length; i++) {
                             var id = roster[teamID][i];
                             
-                            var curCoords, previous_team;
-                            if (id in previousInfo) {
-                                previous_team = previousInfo[id]["team_id"];
-                                curCoords = previousInfo[id]["location"].slice(0);
+                            var curCoords;
+                            if (id in me.previousLocations) {
+                                curCoords = me.previousLocations[id].slice(0);
                             }
                             else {
-                                previous_team = teamID;
                                 curCoords = me.getRookieCoords(teamID);
                             }
 
                             var playerData = {
                                 'id' : id,
                                 'player' : true, // optimization to speed sorting
-                                'previous_team' : previous_team,
                                 'team_id'  : teamID,
                                 //XXX: in true model the arena should be a 
                                 // function of the season and the team 
@@ -324,6 +329,8 @@ angular.module("sportsGraphDirective", []).directive(
                             me.activePlayers.push(playerData);
                         }
                     }
+                    // reset this after consuming data
+                    me.previousLocations = {};
                     
                     //player is the D3 data join for players.
                     // player.enter() yeilds arriving players, 
@@ -341,20 +348,6 @@ angular.module("sportsGraphDirective", []).directive(
                         function(d) { return d.id;}
                     );
                     
-                    // this is just for veteran players
-                    // (must be called before player.enter()
-                    player
-                        .attr("class","player") // drop z-sortable
-                        .each( function(d) {
-                            me.counts.update++;
-                        })
-                        // use the previous team id so the logoshows where
-                        // the player is coming from, not where he is going
-                        .attr("xlink:href", function(d) {
-                            var team = me.teams[d.previous_team];
-                            return team.logo;
-                        })
-                    
                     player.enter()
                         .append("image")
                         .each( function(d) {
@@ -365,6 +358,7 @@ angular.module("sportsGraphDirective", []).directive(
                                     "Saw player " + d.id + " enter league"); 
                             }
                         })
+                        // set z-sortable on entry so player is sorted 'under' arena icons
                         .attr("class", "player z-sortable")
                         .attr("x", function(d) { return d['coord']['src'][0]; })
                         .attr("y", function(d) { return d['coord']['src'][1]; })
@@ -394,6 +388,7 @@ angular.module("sportsGraphDirective", []).directive(
 
                     var arenaEnter = arena.enter()
                         .append("svg:g")
+                        //arenas need z-sortable so they can be soerted 'over' new arriving players
                         .attr("class","arena z-sortable")
                         .attr("transform", function (d) {
                             var size = globals.image.arena_size;
@@ -445,22 +440,18 @@ angular.module("sportsGraphDirective", []).directive(
                     }
                 };
               
-                //XXX: TODO  I cannot get this to work or to stop flickering
+                //XXX: TODO  I cannot get this to stop flickering
                 // see dirty hack workaround above (i draw the images twice)
+                // Why 'sort' ?
                 // SVG does not support z-index attribute (controlling what goes on top)
                 // instead it relies on a 'last goes on top' based on the ordering of elements in the DOM
                 // D3 provides an ordering function which will rearrange DOM ordering.
-                // we want arenas on top
+                // we want arenas on top and players on bottom
                 me.sortNodes = function () {
                     me.svg.selectAll(".z-sortable").sort( function (a,b) {
                         if (a.player) { return -1; }
                         if (b.player) { return 1; }
                         return 0;
-
-                        // Open question: is this slower than above?
-                        // if ('arena_id' in a) { return 1; }
-                        // if ('arena_id' in b) { return -1; }
-                        // return 0;
                     });
                 };
 
