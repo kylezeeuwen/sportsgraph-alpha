@@ -6,8 +6,104 @@
             "end_season": "2012", 
             "latitude": "39.74861", 
             "longitude": "-105.00750", 
-            "start_season": "1997", 
+            "start_season": "1995", 
             "team_id": "1"
+        }, 
+        "10": {
+            "arena_id": "10", 
+            "arena_name": "Prudential Center", 
+            "end_season": "2012", 
+            "latitude": "40.73361", 
+            "longitude": "-74.17111", 
+            "start_season": "1995", 
+            "team_id": "10"
+        }, 
+        "11": {
+            "arena_id": "11", 
+            "arena_name": "Honda Center", 
+            "end_season": "2012", 
+            "comment" : "I moved the stadium for aesthetics",
+            "real_latitude": "33.80778", 
+            "real_longitude": "-117.87667", 
+            "latitude": "33.4", 
+            "longitude": "-117.0", 
+            "start_season": "1995", 
+            "team_id": "11"
+        }, 
+        "12": {
+            "arena_id": "12", 
+            "arena_name": "Scotiabank Saddledome", 
+            "end_season": "2012", 
+            "latitude": "51.03750", 
+            "longitude": "-114.05194", 
+            "start_season": "1995", 
+            "team_id": "12"
+        }, 
+        "13": {
+            "arena_id": "13", 
+            "arena_name": "Wells Fargo Center", 
+            "end_season": "2012", 
+            "latitude": "39.90111", 
+            "longitude": "-75.17194", 
+            "start_season": "1995", 
+            "team_id": "13"
+        }, 
+        "14": {
+            "arena_id": "14", 
+            "arena_name": "PNC Arena", 
+            "end_season": "2012", 
+            "latitude": "35.80333", 
+            "longitude": "-78.72194", 
+            "start_season": "1995", 
+            "team_id": "14"
+        }, 
+        "15": {
+            "arena_id": "15", 
+            "arena_name": "Nassau Veterans Memorial Colis", 
+            "end_season": "2012", 
+            "comment" : "I moved the stadium for aesthetics",
+            "real_latitude": "40.72278", 
+            "real_longitude": "-73.59056", 
+            "latitude": "41.3", 
+            "longitude": "-72.9", 
+            "start_season": "1995", 
+            "team_id": "15"
+        }, 
+        "16": {
+            "arena_id": "16", 
+            "arena_name": "MTS Centre", 
+            "end_season": "2012", 
+            "latitude": "49.89278", 
+            "longitude": "-97.14361", 
+            "start_season": "1995", 
+            "team_id": "16"
+        }, 
+        "17": {
+            "arena_id": "17", 
+            "arena_name": "Staples Center", 
+            "end_season": "2012", 
+            "latitude": "34.04306", 
+            "longitude": "-118.26722", 
+            "start_season": "1995", 
+            "team_id": "17"
+        }, 
+        "18": {
+            "arena_id": "18", 
+            "arena_name": "Tampa Bay Times Forum", 
+            "end_season": "2012", 
+            "latitude": "27.94278", 
+            "longitude": "-82.45194", 
+            "start_season": "1995", 
+            "team_id": "18"
+        }, 
+        "19": {
+            "arena_id": "19", 
+            "arena_name": "Air Canada Centre", 
+            "end_season": "2012", 
+            "latitude": "43.64333", 
+            "longitude": "-79.37917", 
+            "start_season": "1995", 
+            "team_id": "19"
         }, 
         "2": {
             "arena_id": "2", 
@@ -15,8 +111,98 @@
             "end_season": "2012", 
             "latitude": "41.88056", 
             "longitude": "-87.67417", 
-            "start_season": "1997", 
+            "start_season": "1995", 
             "team_id": "2"
+        }, 
+        "20": {
+            "arena_id": "20", 
+            "arena_name": "Rexall Place", 
+            "end_season": "2012", 
+            "latitude": "53.57139", 
+            "longitude": "-113.45611", 
+            "start_season": "1995", 
+            "team_id": "20"
+        }, 
+        "21": {
+            "arena_id": "21", 
+            "arena_name": "BB&T Center", 
+            "end_season": "2012", 
+            "latitude": "26.15833", 
+            "longitude": "-80.32556", 
+            "start_season": "1995", 
+            "team_id": "21"
+        }, 
+        "22": {
+            "arena_id": "22", 
+            "arena_name": "Consol Energy Center", 
+            "end_season": "2012", 
+            "latitude": "40.43944", 
+            "longitude": "-79.98917", 
+            "start_season": "1995", 
+            "team_id": "22"
+        }, 
+        "23": {
+            "arena_id": "23", 
+            "arena_name": "Bridgestone Arena", 
+            "end_season": "2012", 
+            "latitude": "36.15917", 
+            "longitude": "-86.77861", 
+            "start_season": "1995", 
+            "team_id": "23"
+        }, 
+        "24": {
+            "arena_id": "24", 
+            "arena_name": "Madison Square Garden", 
+            "end_season": "2012", 
+            "latitude": "40.75056", 
+            "longitude": "-73.99361", 
+            "start_season": "1995", 
+            "team_id": "24"
+        }, 
+        "25": {
+            "arena_id": "25", 
+            "arena_name": "Joe Louis Arena", 
+            "end_season": "2012", 
+            "latitude": "42.32528", 
+            "longitude": "-83.05139", 
+            "start_season": "1995", 
+            "team_id": "25"
+        }, 
+        "26": {
+            "arena_id": "26", 
+            "arena_name": "First Niagara Center", 
+            "end_season": "2012", 
+            "latitude": "42.87500", 
+            "longitude": "-78.87639", 
+            "start_season": "1995", 
+            "team_id": "26"
+        }, 
+        "27": {
+            "arena_id": "27", 
+            "arena_name": "Scotiabank Place", 
+            "end_season": "2012", 
+            "latitude": "45.29694", 
+            "longitude": "-75.92722", 
+            "start_season": "1995", 
+            "team_id": "27"
+        }, 
+        "28": {
+            "arena_id": "28", 
+            "arena_name": "HP Pavilion at San Jose", 
+            "end_season": "2012", 
+            "latitude": "37.33278", 
+            "longitude": "-121.90111", 
+            "start_season": "1995", 
+            "team_id": "28"
+        }, 
+        "29": {
+            "arena_id": "29", 
+            "arena_name": "American Airlines Center", 
+            "end_season": "2012", 
+            "latitude": "32.79056", 
+            "longitude": "-96.81028", 
+            "start_season": "1995", 
+            "team_id": "29"
         }, 
         "3": {
             "arena_id": "3", 
@@ -24,8 +210,17 @@
             "end_season": "2012", 
             "latitude": "39.96928", 
             "longitude": "-83.00611", 
-            "start_season": "1997", 
+            "start_season": "1995", 
             "team_id": "3"
+        }, 
+        "30": {
+            "arena_id": "30", 
+            "arena_name": "Xcel Energy Center", 
+            "end_season": "2012", 
+            "latitude": "44.94472", 
+            "longitude": "-93.10111", 
+            "start_season": "1995", 
+            "team_id": "30"
         }, 
         "4": {
             "arena_id": "4", 
@@ -33,7 +228,7 @@
             "end_season": "2012", 
             "latitude": "38.62680", 
             "longitude": "-90.20260", 
-            "start_season": "1997", 
+            "start_season": "1995", 
             "team_id": "4"
         }, 
         "5": {
@@ -42,7 +237,7 @@
             "end_season": "2012", 
             "latitude": "42.36630", 
             "longitude": "-71.06223", 
-            "start_season": "1997", 
+            "start_season": "1995", 
             "team_id": "5"
         }, 
         "6": {
@@ -51,10 +246,37 @@
             "end_season": "2012", 
             "latitude": "45.49611", 
             "longitude": "-73.56944", 
-            "start_season": "1997", 
+            "start_season": "1995", 
             "team_id": "6"
+        }, 
+        "7": {
+            "arena_id": "7", 
+            "arena_name": "Rogers Arena", 
+            "end_season": "2012", 
+            "latitude": "49.27778", 
+            "longitude": "-123.10889", 
+            "start_season": "1995", 
+            "team_id": "7"
+        }, 
+        "8": {
+            "arena_id": "8", 
+            "arena_name": "Verizon Center", 
+            "end_season": "2012", 
+            "latitude": "38.89806", 
+            "longitude": "-77.02083", 
+            "start_season": "1995", 
+            "team_id": "8"
+        }, 
+        "9": {
+            "arena_id": "9", 
+            "arena_name": "Jobing.com Arena", 
+            "end_season": "2012", 
+            "latitude": "33.53194", 
+            "longitude": "-112.26111", 
+            "start_season": "1995", 
+            "team_id": "9"
         }
-    },
+    }, 
     "players": {
         "1": { "dob": "1", "firstname": "1", "hometown": "1", "lastname": "1", "latitude": null, "longitude": null, "player_id": "1" }, 
         "2": { "dob": "2", "firstname": "2", "hometown": "2", "lastname": "2", "latitude": null, "longitude": null, "player_id": "2" }, 
@@ -72,11 +294,215 @@
         "1998"
     ], 
     "teams": {
-        "1": { "color": null, "shortname": null, "team_id": "1", "teamname": "1" }, 
-        "2": { "color": null, "shortname": null, "team_id": "2", "teamname": "2" }, 
-        "3": { "color": null, "shortname": null, "team_id": "3", "teamname": "3" }, 
-        "4": { "color": null, "shortname": null, "team_id": "4", "teamname": "4" }, 
-        "5": { "color": null, "shortname": null, "team_id": "5", "teamname": "5" }, 
-        "6": { "color": null, "shortname": null, "team_id": "6", "teamname": "6" }
+        "1": {
+            "color": null, 
+            "shortname": null, 
+            "team_id": "1", 
+            "teamname": "avalanche",
+            "logo": "images/logos/avalanche.png"
+        }, 
+        "10": {
+            "color": null, 
+            "shortname": null, 
+            "team_id": "10", 
+            "teamname": "devils",
+            "logo": "images/logos/devils.png"
+        }, 
+        "11": {
+            "color": null, 
+            "shortname": null, 
+            "team_id": "11", 
+            "teamname": "ducks",
+            "logo": "images/logos/ducks.png"
+        }, 
+        "12": {
+            "color": null, 
+            "shortname": null, 
+            "team_id": "12", 
+            "teamname": "flames",
+            "logo": "images/logos/flames.png"
+        }, 
+        "13": {
+            "color": null, 
+            "shortname": null, 
+            "team_id": "13", 
+            "teamname": "flyers",
+            "logo": "images/logos/flyers.png"
+        }, 
+        "14": {
+            "color": null, 
+            "shortname": null, 
+            "team_id": "14", 
+            "teamname": "hurricanes",
+            "logo": "images/logos/hurricanes.png"
+        }, 
+        "15": {
+            "color": null, 
+            "shortname": null, 
+            "team_id": "15", 
+            "teamname": "islanders",
+            "logo": "images/logos/islanders.png"
+        }, 
+        "16": {
+            "color": null, 
+            "shortname": null, 
+            "team_id": "16", 
+            "teamname": "jets",
+            "logo": "images/logos/jets.png"
+        }, 
+        "17": {
+            "color": null, 
+            "shortname": null, 
+            "team_id": "17", 
+            "teamname": "kings",
+            "logo": "images/logos/kings.png"
+        }, 
+        "18": {
+            "color": null, 
+            "shortname": null, 
+            "team_id": "18", 
+            "teamname": "lightning",
+            "logo": "images/logos/lightning.png"
+        }, 
+        "19": {
+            "color": null, 
+            "shortname": null, 
+            "team_id": "19", 
+            "teamname": "mapleleafs",
+            "logo": "images/logos/mapleleafs.png"
+        }, 
+        "2": {
+            "color": null, 
+            "shortname": null, 
+            "team_id": "2", 
+            "teamname": "blackhawks",
+            "logo": "images/logos/blackhawks.png"
+        }, 
+        "20": {
+            "color": null, 
+            "shortname": null, 
+            "team_id": "20", 
+            "teamname": "oilers",
+            "logo": "images/logos/oilers.png"
+        }, 
+        "21": {
+            "color": null, 
+            "shortname": null, 
+            "team_id": "21", 
+            "teamname": "panthers",
+            "logo": "images/logos/panthers.png"
+        }, 
+        "22": {
+            "color": null, 
+            "shortname": null, 
+            "team_id": "22", 
+            "teamname": "penguins",
+            "logo": "images/logos/penguins.png"
+        }, 
+        "23": {
+            "color": null, 
+            "shortname": null, 
+            "team_id": "23", 
+            "teamname": "predators",
+            "logo": "images/logos/predators.png"
+        }, 
+        "24": {
+            "color": null, 
+            "shortname": null, 
+            "team_id": "24", 
+            "teamname": "rangers",
+            "logo": "images/logos/rangers.png"
+        }, 
+        "25": {
+            "color": null, 
+            "shortname": null, 
+            "team_id": "25", 
+            "teamname": "redwings",
+            "logo": "images/logos/redwings.png"
+        }, 
+        "26": {
+            "color": null, 
+            "shortname": null, 
+            "team_id": "26", 
+            "teamname": "sabres",
+            "logo": "images/logos/sabres.png"
+        }, 
+        "27": {
+            "color": null, 
+            "shortname": null, 
+            "team_id": "27", 
+            "teamname": "senators",
+            "logo": "images/logos/senators.png"
+        }, 
+        "28": {
+            "color": null, 
+            "shortname": null, 
+            "team_id": "28", 
+            "teamname": "sharks",
+            "logo": "images/logos/sharks.png"
+        }, 
+        "29": {
+            "color": null, 
+            "shortname": null, 
+            "team_id": "29", 
+            "teamname": "stars",
+            "logo": "images/logos/stars.png"
+        }, 
+        "3": {
+            "color": null, 
+            "shortname": null, 
+            "team_id": "3", 
+            "teamname": "bluejackets",
+            "logo": "images/logos/bluejackets.png"
+        }, 
+        "30": {
+            "color": null, 
+            "shortname": null, 
+            "team_id": "30", 
+            "teamname": "wild",
+            "logo": "images/logos/wild.png"
+        }, 
+        "4": {
+            "color": null, 
+            "shortname": null, 
+            "team_id": "4", 
+            "teamname": "blues",
+            "logo": "images/logos/blues.png"
+        }, 
+        "5": {
+            "color": null, 
+            "shortname": null, 
+            "team_id": "5", 
+            "teamname": "bruins",
+            "logo": "images/logos/bruins.png"
+        }, 
+        "6": {
+            "color": null, 
+            "shortname": null, 
+            "team_id": "6", 
+            "teamname": "canadiens",
+            "logo": "images/logos/canadiens.png"
+        }, 
+        "7": {
+            "color": null, 
+            "shortname": null, 
+            "team_id": "7", 
+            "teamname": "canucks",
+            "logo": "images/logos/canucks.png"
+        }, 
+        "8": {
+            "color": null, 
+            "shortname": null, 
+            "team_id": "8", 
+            "teamname": "capitals",
+            "logo": "images/logos/capitals.png"
+        }, 
+        "9": {
+            "color": null, 
+            "shortname": null, 
+            "team_id": "9", 
+            "teamname": "coyotes",
+            "logo": "images/logos/coyotes.png"
+        }
     }
 }

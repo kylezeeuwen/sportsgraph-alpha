@@ -7,6 +7,9 @@ var globals = {
     //   <ID> : 1
     },
     graph : {
+        image: {
+            size: 32
+        },
         sources : {
             world : 'data/world-50m.json',
             league : 'data/league.pretty.json' // full league. Lot of data

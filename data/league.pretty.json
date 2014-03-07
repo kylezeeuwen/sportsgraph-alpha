@@ -41520,14 +41520,14 @@
     ], 
     "teams": {
         "1": {
-            "color": null, 
+            "color": "#d62728", 
             "shortname": null, 
             "team_id": "1", 
             "teamname": "avalanche",
             "logo": "images/logos/avalanche.png"
         }, 
         "10": {
-            "color": null, 
+            "color": "#d62728", 
             "shortname": null, 
             "team_id": "10", 
             "teamname": "devils",
@@ -41541,7 +41541,7 @@
             "logo": "images/logos/ducks.png"
         }, 
         "12": {
-            "color": null, 
+            "color": "#d62728", 
             "shortname": null, 
             "team_id": "12", 
             "teamname": "flames",
@@ -41590,7 +41590,7 @@
             "logo": "images/logos/lightning.png"
         }, 
         "19": {
-            "color": null, 
+            "color": "#1f77b4",  
             "shortname": null, 
             "team_id": "19", 
             "teamname": "mapleleafs",
@@ -41604,7 +41604,7 @@
             "logo": "images/logos/blackhawks.png"
         }, 
         "20": {
-            "color": null, 
+            "color": "#1f77b4",  
             "shortname": null, 
             "team_id": "20", 
             "teamname": "oilers",
@@ -41639,7 +41639,7 @@
             "logo": "images/logos/rangers.png"
         }, 
         "25": {
-            "color": null, 
+            "color": "#d62728", 
             "shortname": null, 
             "team_id": "25", 
             "teamname": "redwings",
@@ -41702,7 +41702,7 @@
             "logo": "images/logos/bruins.png"
         }, 
         "6": {
-            "color": null, 
+            "color": "#d62728", 
             "shortname": null, 
             "team_id": "6", 
             "teamname": "canadiens",

@@ -31,7 +31,11 @@ angular.module("sportsGraphDirective", []).directive(
                     if (me.haveData && me.haveMap) {
                         me.assignArenaCoordinates();
                         me.ready = true;
+
+                        // start the animateSeason loop
+                        // animateSeason(x) will update currentYear once season is complete
                         me.animateSeason(me.currentYear);
+
                     }
                 });
 
@@ -128,7 +132,7 @@ angular.module("sportsGraphDirective", []).directive(
                                 me.addImage(
                                     globals.graph.start.image,
                                     me.getRookieCoords(),
-                                    32,
+                                    globals.graph.image.size,
                                     "This is where all rookies start from"
                                 );
                             }
@@ -138,7 +142,7 @@ angular.module("sportsGraphDirective", []).directive(
                                 me.addImage(
                                     globals.graph.end.image,
                                     me.getRetireeCoords(),
-                                    32,
+                                    globals.graph.image.size,
                                     "This is where all retirees go to play golf"
                                 );
                             }
@@ -167,7 +171,7 @@ angular.module("sportsGraphDirective", []).directive(
                         
                         me.stillTransitioning = false;
                         me.numTransitioned = 0;
-                        me.svg.selectAll("circle.node").each(me.computeNewCoord);
+                        me.svg.selectAll("circle.player").each(me.computeNewCoord);
                         if (globals.debugF) { 
                             console.log(
                                 "%s tick %d players transitioned", 
@@ -181,6 +185,7 @@ angular.module("sportsGraphDirective", []).directive(
                                 "force.stop" +
                                 " seasonOver " + me.currentYear +
                                 " entered " + me.counts.enter +
+                                " updated " + me.counts.update +
                                 " exited " + me.counts.exit +
                                 " tickCount " + me.tickCount
                             )}
@@ -223,11 +228,24 @@ angular.module("sportsGraphDirective", []).directive(
                         arena.cx = coords[0];
                         arena.cy = coords[1];
                         arena.fill = me.fill(arenaID);
+                        arena.player = false; // optimization to speed sorting
 
-                        var team = me.teams[arena.team_id];
-                        if ('logo' in team) {
+                        // XXX: This doesn't work with full data model
+                        // where teams move etc.
+                        arena.team = me.teams[arena.team_id];
+                        
+                        // This is a dirty hack to avoid z-fighting flickering
+                        // Once copy of the logo is controlled by D3, and I must 
+                        // sort this against new elements to keep the logo on top
+                        // but the sort manipulates the DOM causing a flicker 
+                        // where the logo briefly dissappears. So the dirty 
+                        // hack is right here I draw the logo again and this 
+                        // copy of the logo is not sorted. When the flicker 
+                        // occurs this logo is shown.
+                        // Terrible
+                        if ('logo' in arena.team) {
                             me.addImage(
-                                team.logo,
+                                arena.team.logo,
                                 coords,
                                 32,
                                 arena.arena_name
@@ -247,7 +265,7 @@ angular.module("sportsGraphDirective", []).directive(
                     // At the beginning of the new season
                     // record where player ended last season
                     var previousLocations = {};
-                    me.svg.selectAll(".node").each( function (d) {
+                    me.svg.selectAll(".player").each( function (d) {
                             previousLocations[d.id] = d.coord["dst"].slice();
                     });
 
@@ -264,8 +282,9 @@ angular.module("sportsGraphDirective", []).directive(
                                 curCoords = me.getRookieCoords(teamID);
                             }
 
-                            var player = {
+                            var playerData = {
                                 'id' : id,
+                                'player' : true, // optimization to speed sorting
                                 'teamID'  : teamID,
                                 //XXX: in true model the arena should be a 
                                 // function of the season and the team 
@@ -281,40 +300,48 @@ angular.module("sportsGraphDirective", []).directive(
                                 }
                             };
                             
-                            if (player['coord']['src'][0] == player['coord']['dst'][0] &&
-                                player['coord']['src'][1] == player['coord']['dst'][1]) {
-                                player['dormant'] = true;
+                            if (playerData['coord']['src'][0] == playerData['coord']['dst'][0] &&
+                                playerData['coord']['src'][1] == playerData['coord']['dst'][1]) {
+                                playerData['dormant'] = true;
                             }
                 
                             if (id in globals.trackThesePlayers) {
                                 if (globals.debugF) { console.log(
-                                    "Adding tracked player " + id + 
-                                    " team ID " + player.teamID + 
+                                    "Adding tracked playerData " + id + 
+                                    " team ID " + playerData.teamID + 
                                     " to activePlayers."
                                 )}
                             }
                 
-                            me.activePlayers.push(player);
+                            me.activePlayers.push(playerData);
                         }
                     }
                     
-                    //node is the D3 data join for players.
-                    // node.enter() yeilds arriving players, 
-                    // node.exit() yields exiting players.
+                    //player is the D3 data join for players.
+                    // player.enter() yeilds arriving players, 
+                    // player.exit() yields exiting players.
                     // Read the D3 docs and specifically 
                     // D3 constancy to figure this out:
                     // NB links may get out of date. search "D3 constancy":
                     //  summary: http://bost.ocks.org/mike/constancy/
                     //  source: https://github.com/mbostock/bost.ocks.org/blob/gh-pages/mike/constancy/index.html
-                    me.counts = { 'enter' : 0, 'exit' : 0 };
+                    me.counts = { 'enter' : 0, 'exit' : 0, 'update' : 0 };
 
                     me.force.nodes(me.activePlayers);
-                    var node = me.svg.selectAll(".node").data(
+                    var player = me.svg.selectAll(".player").data(
                         me.force.nodes(), 
                         function(d) { return d.id;}
                     );
-                
-                    node.enter()
+                    
+                    // this is just for veteran players
+                    // (must be called before player.enter()
+                    player
+                        .attr("class","player") // drop z-sortable
+                        .each( function(d) {
+                            me.counts.update++;
+                        });
+                    
+                    player.enter()
                         .append("svg:circle")
                         .each( function(d) {
                             me.counts.enter++;
@@ -324,31 +351,60 @@ angular.module("sportsGraphDirective", []).directive(
                                     "Saw player " + d.id + " enter league"); 
                             }
                         })
-                        .attr("class", "node z-sortable")
-                        .attr("z-index", "10")
+                        .attr("class", "player z-sortable")
                         .attr("cx", function(d) { return d['coord']['src'][0]; })
                         .attr("cy", function(d) { return d['coord']['src'][1]; })
                         .attr("r", 5)
                         .style("stroke-width", 1.5)
-                        .append("svg:title").text(function(d) { return d.id });
-                   
-                    // this is for all rookie and veteran players
-                    // update the color as the team may have changed
-                    node.style("fill", function(d) { 
+                        .append("svg:title").text(function(d) { return d.id })
+                    
+                    // This is for both rookies and veterans
+                    player
+                        .style("fill", function(d) { 
                             return me.arenas[d.arenaID].fill; 
                         })
                         .style("stroke", function(d) { 
                             return d3.rgb(
                                 me.arenas[d.arenaID].fill).darker(2); 
                         });
-
+                   
                     // this is for all retirees
-                    var nodeExit = node.exit().each( function(d) {
+                    var playerExit = player.exit().each( function(d) {
                         me.counts.exit++;
                         if (d.id in globals.trackThesePlayers) {
                             console.log("Saw player " + d.id + " exit league"); 
                         }
                     });
+                    
+                    var arena = me.svg.selectAll(".arena").data(
+                        // inline equiv of me.arenas.values() (XXX:switch to prototype?)
+                        Object.keys(me.arenas).map(function(arena_id){
+                            return me.arenas[arena_id];
+                        }),
+                        function(d) { return d.arena_id;}
+                    );
+
+                    var arenaEnter = arena.enter()
+                        .append("svg:g")
+                        .attr("class","arena z-sortable")
+                        .attr("transform", function (d) {
+                            var size = globals.graph.image.size;
+                            return "translate(" + (d.cx - size/2) + "," + (d.cy - size/2) + ")";
+                        });
+
+                    arenaEnter.append("image")
+                        .attr("xlink:href", function(d) {
+                            team = me.teams[d.team_id];
+                            return team.logo;
+                            //XXX: Handle default here
+                        })
+                        .attr("width", function(d) { return globals.graph.image.size; })
+                        .attr("height", function(d) { return globals.graph.image.size; });
+                    
+                    arenaEnter.append("svg:title")
+                        .text(function(d) { return d.arena_name; });
+
+                    me.sortNodes(); // this ensures correct z ordering
 
                     // if there are retiring players and showRetirees is enabled
                     // then animate the exit of the retirees and THEN start 
@@ -356,7 +412,7 @@ angular.module("sportsGraphDirective", []).directive(
                     if (me.showRetirees && me.counts.exit) {
                         var activeExits = me.counts.exit;
                         var coords = me.getRetireeCoords();
-                        nodeExit.transition()
+                        playerExit.transition()
                             // make it so at full speed it takes 2 seconds 
                             .ease('linear') 
                             .duration(200000 / me.currentSpeed) 
@@ -368,7 +424,6 @@ angular.module("sportsGraphDirective", []).directive(
                             .each("end", function (transition) {
                                 --activeExits;
                                 if (activeExits < 1) {
-                                    me.sortNodes(); // this ensures correcet z ordering
                                     me.force.start();
                                     me.transitionInProgress = true;
                                 }
@@ -376,24 +431,28 @@ angular.module("sportsGraphDirective", []).directive(
                             .remove();
                     }
                     else {
-                        nodeExit.remove();
-                        me.sortNodes(); // this ensures correct z ordering
-
+                        playerExit.remove();
                         me.force.start();
                         me.transitionInProgress = true;
                     }
                 };
-               
+              
+                //XXX: TODO  I cannot get this to work or to stop flickering
+                // see dirty hack workaround above (i draw the images twice)
                 // SVG does not support z-index attribute (controlling what goes on top)
                 // instead it relies on a 'last goes on top' based on the ordering of elements in the DOM
-                // D3 provides an ordering function which we use here. But since our logos are
-                // not part of the D3 data bind, the logos show up as undefined
-                // we want logos on top, so if you encounter undefined then sort to the end (makingthe logos on top)
+                // D3 provides an ordering function which will rearrange DOM ordering.
+                // we want arenas on top
                 me.sortNodes = function () {
                     me.svg.selectAll(".z-sortable").sort( function (a,b) {
-                        if (typeof(a) == 'undefined') { return 1; }
-                        if (typeof(b) == 'undefined') { return -1; }
+                        if (a.player) { return -1; }
+                        if (b.player) { return 1; }
                         return 0;
+
+                        // Open question: is this slower than above?
+                        // if ('arena_id' in a) { return 1; }
+                        // if ('arena_id' in b) { return -1; }
+                        // return 0;
                     });
                 };
 
@@ -546,15 +605,13 @@ angular.module("sportsGraphDirective", []).directive(
                 me.addImage = function (src, coords, size, title) {
 
                     var innerG = me.svg.append("svg:g")
-                        .attr("class","logo z-sortable")
-                        .attr("class","logo z-sortable")
+                        .attr("class","logo")
                         .attr("transform",
                             "translate(" + (coords[0] - size/2) + "," + (coords[1] - size/2) + ")"
                         );
 
                     innerG.append("image")
                         .attr("xlink:href", src)
-                        .attr("z-index", 100)
                         .attr("width", size)
                         .attr("height", size);
                     
