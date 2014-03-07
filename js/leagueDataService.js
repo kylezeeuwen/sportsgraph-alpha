@@ -2,7 +2,7 @@ angular.module('leagueDataService', []).factory('league', function ($http) {
     if (globals.debugF) { console.log("league Init called"); }
     
     var me = {
-        dataSource : globals.graph.sources.league,
+        dataSource : globals.sources.league,
         data : {}
     };
 
