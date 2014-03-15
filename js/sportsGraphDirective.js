@@ -4,7 +4,8 @@ angular.module("sportsGraphDirective", []).directive(
         var directiveObject = {
             restrict: 'E',
             scope : {
-                haveData: '=',
+                initCallBack: '&onInit',
+                go: '=',
                 currentYear: '=',
                 currentSpeed: '=',
                 showRookies: '=',
@@ -19,8 +20,23 @@ angular.module("sportsGraphDirective", []).directive(
                 var me = scope;
 
                 me.setupCanvas(iElement);
+               
+                //loading dependencies are controlled here via multiple watch(s)
                 
-                me.$watch('haveData + haveMap', function (n) {
+                // The $watch stmts below dont work with league.haveData,
+                // so make a local to monitor 
+                me.$watch(league.haveData, function (n) {
+                    if (globals.debugF) { 
+                        console.log("watch league haveData ", n); 
+                    }
+                    if (n) {
+                        me.haveData = true;
+                    }
+                });
+                
+                // 1) once we have league and map data we can 
+                //   -load static images and calc x,y of our arenas (our destination)
+                me.$watch('haveData && haveMap', function (n) {
                     if (globals.debugF) { 
                         console.log(
                             "graph haveData(" + me.haveData + 
@@ -29,16 +45,52 @@ angular.module("sportsGraphDirective", []).directive(
                     }
 
                     if (me.haveData && me.haveMap) {
+
+                        //this will start loading logos and 
+                        // set logosLoaded=true once all async calls complete
                         me.assignArenaCoordinates();
                         me.ready = true;
+                    }
+                });
 
-                        // start the animateSeason loop
-                        // animateSeason(x) will update currentYear once season is complete
-                        me.animateSeason(me.currentYear);
+                // 2) once we have league, map data, and static images loaded
+                //    we are ready, but wait for external signal to begin 
+                me.$watch('haveData && haveMap && logosLoaded', function (n) {
+                    if (globals.debugF) { 
+                        console.log(
+                            "graph haveData(" + me.haveData + 
+                            ") + haveMap(" + me.haveMap + 
+                            ") + logosLoaded(" + me.logosLoaded + ") called"
+                        ); 
+                    }
+                    if (me.haveData && me.haveMap && me.logosLoaded) {
+                        me.ready = true;
+
+                        //the init call back signals readiness to outercontroller
+                        // when outer controller is ready, it will set 'go'
+                        me.initCallBack();
+                    }
+                });
+
+                // 3) If we are ready, When we get the signal to go, then go
+                me.$watch('ready && go', function (n) {
+                    if (globals.debugF) { 
+                        console.log(
+                            "ready(" + me.ready + ") + go(" + me.go + ") called"
+                        ); 
+                    }
+
+                    if (me.ready && me.go) {
+                        me.minSeason = parseInt(league.getMinSeason());
+                        me.maxSeason = parseInt(league.getMaxSeason());
+                        me.currentYear = me.minSeason;
 
                     }
                 });
 
+                // 4) As soon as the season is set, the animation begins
+                // When year X is complete, the year is incremented and this 
+                // watch restarts the animation for the next year
                 me.$watch('currentYear', function (newYear, oldYear) {
                     if (globals.debugF) { 
                         console.log(
@@ -55,11 +107,11 @@ angular.module("sportsGraphDirective", []).directive(
                     }
                     else if (!oldYear || oldYear == 'NaN') {
                         // Do first season animation
-                        scope.animateSeason(newYear);
+                        me.animateSeason(newYear);
                     } 
                     else if (newYear != oldYear) {
                         // Do interseason animation
-                        scope.animateSeason(newYear);
+                        me.animateSeason(newYear);
                     }
                 });
             },
@@ -70,12 +122,19 @@ angular.module("sportsGraphDirective", []).directive(
  
                 var me = $scope;
                 
+                me.ready = false; // haveData && me.haveMap && me.logosLoaded
+                me.haveData = false;
+                me.haveMap = false;
+                me.logosLoaded = false;
+                
                 me.w = me.width;
                 me.h = me.height;
                 me.closeEnough = 0.5; //XXX: Move to config               
                 me.minTicksToGetHome = 50; //XXX: Move to config
                 me.activePlayers = [];
                 me.previousLocations = {};
+                me.loadedLogosCount = 0;
+
                 
                 // Initialize the svg canvas, map overlay, and force overlay
                 //   RETURNS: null
@@ -83,10 +142,8 @@ angular.module("sportsGraphDirective", []).directive(
                     if (globals.debugF) { 
                         console.log("graph setupCanvas called"); 
                     }
-                   
-                    // auto color scheme
-                    me.fill = d3.scale.category20();
-
+                  
+                    // create the outer svg canvas
                     me.svg = d3.select('#' + iElement.attr('id')).append("svg")
                         .attr("width", me.w)
                         .attr("height", me.h);
@@ -95,6 +152,12 @@ angular.module("sportsGraphDirective", []).directive(
                     // Init the world map components
                     ////////////////////////////////
         
+                    // XXX: TODO: this will be calc based on screen size
+                    //  Actually fairly complex to do so.
+                    // google for (stackoverflow articles):
+                    // -d3js-cartography-auto-focus-on-geographic-area-svg-canvas-zoom-scale-coord
+                    // -center-a-map-in-d3-given-a-geojson-object 
+
                     me.projection = d3.geo.mercator()
                         .center([-100,42])
                         .scale(800);
@@ -119,13 +182,13 @@ angular.module("sportsGraphDirective", []).directive(
                             //add country borders
                             me.svg.insert("path", ".graticule")
                                 .datum(topojson.mesh(
-                                    me.world, 
-                                    me.world.objects.countries, 
+                                    me.world, me.world.objects.countries, 
                                     function(a, b) { return a !== b; }
                                 ))
                                 .attr("class", "boundary")
                                 .attr("d", me.path);
-                    
+                   
+                            // signal that map load is complete
                             me.haveMap = true;
 
                             //add hockey start image if this feature is enabled
@@ -134,7 +197,8 @@ angular.module("sportsGraphDirective", []).directive(
                                     globals.start.image,
                                     me.getRookieCoords(),
                                     globals.image.arena_size,
-                                    "This is where all rookies start from"
+                                    "This is where all rookies start from",
+                                    "logo"
                                 );
                             }
                             
@@ -144,10 +208,12 @@ angular.module("sportsGraphDirective", []).directive(
                                     globals.end.image,
                                     me.getRetireeCoords(),
                                     globals.image.arena_size,
-                                    "This is where all retirees go to play golf"
+                                    "This is where all retirees go to play golf",
+                                    "logo"
                                 );
                             }
                         }
+                        // XXX: TODO: Add failure handler
                     });
                     
                     //////////////////////////////////////////
@@ -159,117 +225,169 @@ angular.module("sportsGraphDirective", []).directive(
                         .links([])
                         .gravity(0)
                         .size([me.w, me.h]);
-                   
-                    // Tick is repeatedly called after force.start() is called
-                    // until force.stop() is called. In 'tick' we control the 
-                    // movement of the player nodes from A to B
-                    // XXX: I am not sure if this is not really an appropriate use of force 
-                    // as I am no longer using gravity or alpha.
-                    // I could just use transitions() to animate movement, but then
-                    // I could not control speed. So, if speed feature is removed then
-                    // use of force directed layout should also be removed
-                    me.force.on("tick", function(e) {
-                        
-                        me.stillTransitioning = false;
-                        me.numTransitioned = 0;
-                        me.svg.selectAll(".player").each(me.computeNewCoord);
-                        if (globals.debugF) { 
-                            console.log(
-                                "%s tick %d players transitioned", 
-                                me.currentYear, 
-                                me.numTransitioned
-                            );
-                        }
+                     
+                    // Register the 'on tick' handler. tick is repeatedly 
+                    // called after force.start() is called until force.stop()
+                    // is called. In 'tick' we control the movement of the 
+                    // player nodes from A to B
+                    me.force.on("tick", me.tick);
+                    
+                };
 
-                        if (!me.stillTransitioning || me.tickCount > 1000) {
-                            if (globals.debugF) { console.log(
-                                "force.stop" +
-                                " seasonOver " + me.currentYear +
-                                " entered " + me.counts.enter +
-                                " updated " + me.counts.update +
-                                " exited " + me.counts.exit +
-                                " tickCount " + me.tickCount
-                            )}
-                            me.force.stop();
-                            me.transitionInProgress = false;
+                // Tick is repeatedly called after force.start() is called
+                // until force.stop() is called. In 'tick' we control the 
+                // movement of the player nodes from A to B
+                // NB - design note: I am not sure if this is not really 
+                // an appropriate use of force 
+                // as I am no longer using gravity or alpha.
+                // I could just use transitions() to animate movement, but then
+                // I could not control speed. So, if speed feature is removed then
+                // use of force directed layout should also be removed
+                //   RETURNS: null
+                me.tick = function() {
+                    
+                    me.stillTransitioning = false;
+                    me.numTransitioned = 0;
 
-                            var nextSeason = league.getNextSeason(
-                                me.currentYear);
+                    // compute the new coordinates of the players,
+                    // and set stillTransitioning to (true/false)
+                    me.svg.selectAll(".player").each(me.computeNewCoord);
+                    if (globals.debugF) { 
+                        console.log(
+                            "%s tick %d players transitioned", 
+                            me.currentYear, 
+                            me.numTransitioned
+                        );
+                    }
 
-                            // if there are more seasons then 
-                            // advance the currentSeason after a short delay
-                            if (nextSeason) { 
-                                var delay = 0;
-                                if (typeof(
-                                    globals.transitionDelay) != 'undefined'
-                                ) {
-                                    delay = globals.transitionDelay;
-                                }
-                                $timeout(function() {
-                                    me.currentYear = nextSeason;
-                                }, delay);
+                    // terminate this season animation,
+                    // or keep animating
+                    if (!me.stillTransitioning || me.tickCount > 1000) {
+                        if (globals.debugF) { console.log(
+                            "force.stop" +
+                            " seasonOver " + me.currentYear +
+                            " entered " + me.counts.enter +
+                            " updated " + me.counts.update +
+                            " exited " + me.counts.exit +
+                            " tickCount " + me.tickCount
+                        )}
+                        me.force.stop();
+                        me.transitionInProgress = false;
+                    
+                        var nextSeason = league.getNextSeason(
+                            me.currentYear);
+
+                        // if there are more seasons then 
+                        // advance the currentSeason after a short delay
+                        if (nextSeason) { 
+                            var delay = 0;
+                            if (typeof(
+                                globals.transitionDelay) != 'undefined'
+                            ) {
+                                delay = globals.transitionDelay;
                             }
+                            $timeout(function() {
+                                me.currentYear = nextSeason;
+                            }, delay);
                         }
-                        else {
-                            //keep the simulation hot!
-                            me.force.alpha(0.1);
-                            me.tickCount++;
-                        }
-                    });
+                    }
+                    else {
+                        //keep the simulation hot!
+                        me.force.alpha(0.1);
+                        me.tickCount++;
+                    }
                 };
                
                 // translate arena lat,long coordinates
-                // to x,y positions and assign a color to this arena
+                // to x,y positions and load logos images for each arena
+                //   RETURNS: null
                 me.assignArenaCoordinates = function() { 
+                    if (globals.debugF) { 
+                        console.log("graph assignArenaCoords called"); 
+                    }
                     me.arenas = league.getArenas();
+                    me.arenaCount = Object.keys(me.arenas).length;
                     me.teams = league.getTeams();
+
+                    // this code makes more sense after reading the for below
+                    // -NB it is rumored on stackoverflow that if an 
+                    // image is cached in browser the onload does not 
+                    // always fire. This timeout defends against that condition
+                    me.loadLogoTimeoutID = $timeout( function () {
+                        if (globals.debugF) { console.log("in logo timeout"); }
+                        me.logosLoaded = true;
+                    }, 3000);
+                
+
                     for (var arenaID in me.arenas) {
                         var arena = me.arenas[arenaID];
                         var coords = me.projection([arena['longitude'], arena['latitude']]);
                         arena.cx = coords[0];
                         arena.cy = coords[1];
-                        arena.fill = me.fill(arenaID);
                         arena.player = false; // optimization to speed sorting
 
                         // XXX: This doesn't work with full data model
-                        // where teams move etc.
+                        // where teams move year to year etc.
                         arena.team = me.teams[arena.team_id];
                         
-                        // This is a dirty hack to avoid z-fighting flickering
-                        // Once copy of the logo is controlled by D3, and I must 
-                        // sort this against new elements to keep the logo on top
-                        // but the sort manipulates the DOM causing a flicker 
-                        // where the logo briefly dissappears. So the dirty 
-                        // hack is right here I draw the logo again and this 
-                        // copy of the logo is not sorted. When the flicker 
-                        // occurs this logo is shown.
-                        // Terrible
+                        // This is a dirty hack to avoid z-position flickering
+                        // Wothout these static logos, there is one copy of
+                        // the logo, controlled by D3, and all the player icons,
+                        // controlled by D3. I always want arena logos on top.
+                        // To do so, once a season I must reorder all the new 
+                        // SVG elements (i.e., rookie players) to be before 
+                        // (i.e., under) the arena logos.
+                        // But the sort manipulates the DOM causing a flicker 
+                        // where the logo briefly dissappears. 
+                        // So the dirty hack here is to draw the logo again,
+                        // and this copy of the logo is not sorted. 
+                        // When the flicker occurs this logo is still here.
+                        // So visually no flicker. Terrible ?
                         if ('logo' in arena.team) {
-                            me.addImage(
+                            var img = me.addImage(
                                 arena.team.logo,
                                 coords,
                                 // make it smaller so it gives a little pulse
                                 0.8 * globals.image.arena_size, 
-                                arena.arena_name
+                                arena.arena_name,
+                                "logo static-logo"
+
                             );
+
+                            //set logosLoaded when all logos are loaded.
+                            img.attr('onload', function() {
+                                me.loadedLogosCount++;
+                                if (me.loadedLogosCount >= me.arenaCount) {
+                                    $timeout.cancel(me.loadLogoTimeoutID);
+                                    me.logosLoaded = true;
+                                }
+                            })
                         }
+                        //XXX: TODO use default image if no image present
                     }
+
                 };
                 
+                // compute new player destinations.
+                // Compute the D3 data join for (new,update,remove)
+                // which in this domain translates into (rookies,veterans,retirees)
+                // Also deal with D3 controlled arena icons on first call
+                // Finally call sort so the arenas are visually on top
+                //   RETURNS: null
                 me.animateSeason = function(curSeason) {
-                    if (globals.debugF) { 
-                        console.log("Do firstSeason " + curSeason); 
-                    }
+                    if (globals.debugF) { console.log("animate " + curSeason); }
                 
-                    me.tickCount = 0;
-                    me.activePlayers = [];
-                   
-                    // this will select only league veterans
+                    // before getting the new data, perform 
+                    // an update on the veterans
+                    // and record their current locations
+                    me.previousLocations = {};
                     me.svg.selectAll(".player")
                         // drop z-sortable (the sort is only necessary once on entry)
                         .attr("class","player") 
                         // use the previous season team logo
-                        // this shows where the player is coming from, not where he is going
+                        // this shows where the player is coming from, 
+                        // not where he is going 
+                        // (this has a much better visual effect)
                         .attr("xlink:href", function(d) {
                             var team = me.teams[d.team_id];
                             return team.logo;
@@ -281,6 +399,9 @@ angular.module("sportsGraphDirective", []).directive(
                             me.previousLocations[d.id] = d.coord["dst"].slice();
                         });
 
+                    // Now get the new roster and generate the list of active
+                    // players
+                    me.activePlayers = [];
                     var roster = league.getRoster(curSeason);
                     var player_size = globals.image.player_size;
                     for (var teamID in roster) {
@@ -329,8 +450,6 @@ angular.module("sportsGraphDirective", []).directive(
                             me.activePlayers.push(playerData);
                         }
                     }
-                    // reset this after consuming data
-                    me.previousLocations = {};
                     
                     //player is the D3 data join for players.
                     // player.enter() yeilds arriving players, 
@@ -347,7 +466,8 @@ angular.module("sportsGraphDirective", []).directive(
                         me.force.nodes(), 
                         function(d) { return d.id;}
                     );
-                    
+                   
+                    // add rookies
                     player.enter()
                         .append("image")
                         .each( function(d) {
@@ -370,25 +490,29 @@ angular.module("sportsGraphDirective", []).directive(
                         })
                         .append("svg:title").text(function(d) { return d.id })
                     
-                    // this is for all retirees
+                    // remove retirees
                     var playerExit = player.exit().each( function(d) {
                         me.counts.exit++;
                         if (d.id in globals.trackThesePlayers) {
                             console.log("Saw player " + d.id + " exit league"); 
                         }
                     });
-                    
+                   
+                    // get all the arenas (they are controlled by D3 as well,
+                    // so that i can sort them
                     var arena = me.svg.selectAll(".arena").data(
-                        // inline equiv of me.arenas.values() (XXX:switch to prototype?)
+                        // inline equiv of me.arenas.values() 
                         Object.keys(me.arenas).map(function(arena_id){
                             return me.arenas[arena_id];
                         }),
                         function(d) { return d.arena_id;}
                     );
 
+                    // add new arenas (this is done first season only)
                     var arenaEnter = arena.enter()
                         .append("svg:g")
-                        //arenas need z-sortable so they can be soerted 'over' new arriving players
+                        // arenas need z-sortable so they can be sorted 'over' 
+                        // new arriving players
                         .attr("class","arena z-sortable")
                         .attr("transform", function (d) {
                             var size = globals.image.arena_size;
@@ -407,17 +531,20 @@ angular.module("sportsGraphDirective", []).directive(
                     arenaEnter.append("svg:title")
                         .text(function(d) { return d.arena_name; });
 
+                    // put the arenas on top of the entering rookies
                     me.sortNodes(); // this ensures correct z ordering
 
                     // if there are retiring players and showRetirees is enabled
                     // then animate the exit of the retirees and THEN start 
                     // the normal season simulation
+                    // if showRetirees is disabled, we just remove the retirees
+                    // with no animation
                     if (me.showRetirees && me.counts.exit) {
                         var activeExits = me.counts.exit;
                         var coords = me.getRetireeCoords();
                         playerExit.transition()
-                            // make it so at full speed it takes 2 seconds 
                             .ease('linear') 
+                            // make it so at full speed it takes ~ 2 seconds 
                             .duration(200000 / me.currentSpeed) 
                             .attr("transform", function(d) {
                                 var moveX = coords[0] - d['coord']['cur'][0];
@@ -427,6 +554,7 @@ angular.module("sportsGraphDirective", []).directive(
                             .each("end", function (transition) {
                                 --activeExits;
                                 if (activeExits < 1) {
+                                    me.tickCount = 0;
                                     me.force.start();
                                     me.transitionInProgress = true;
                                 }
@@ -435,6 +563,7 @@ angular.module("sportsGraphDirective", []).directive(
                     }
                     else {
                         playerExit.remove();
+                        me.tickCount = 0;
                         me.force.start();
                         me.transitionInProgress = true;
                     }
@@ -443,10 +572,12 @@ angular.module("sportsGraphDirective", []).directive(
                 //XXX: TODO  I cannot get this to stop flickering
                 // see dirty hack workaround above (i draw the images twice)
                 // Why 'sort' ?
-                // SVG does not support z-index attribute (controlling what goes on top)
-                // instead it relies on a 'last goes on top' based on the ordering of elements in the DOM
-                // D3 provides an ordering function which will rearrange DOM ordering.
-                // we want arenas on top and players on bottom
+                // SVG does not support z-index attribute (controlling what 
+                // goes on top) instead it relies on a 'last goes on top' 
+                // based on the ordering of elements in the DOM D3 provides 
+                // an ordering function which will rearrange DOM ordering. 
+                // We want arenas on top and players on bottom
+                //   RETURNS: NULL
                 me.sortNodes = function () {
                     me.svg.selectAll(".z-sortable").sort( function (a,b) {
                         if (a.player) { return -1; }
@@ -526,6 +657,12 @@ angular.module("sportsGraphDirective", []).directive(
                     return coords;
                 };
 
+                // This function is called in the force.tick
+                // Given the simulation speed, and the 
+                // src location, current, location, and destination
+                // compute the next position of the player
+                // d is the player object (the d3 data part of the data join)
+                //   RETURNS: NULL
                 me.computeNewCoord = function (d) {
                     if (!d['dormant']) {
                         var pos = d['coord'];
@@ -599,20 +736,24 @@ angular.module("sportsGraphDirective", []).directive(
                     return overShotTheMark;
                 }
 
-                me.addImage = function (src, coords, size, title) {
+                // wrapper function to add an svg:image to the canvas
+                // RETURNS: the svg:image object (kind of)
+                me.addImage = function (src, coords, size, title, classString) {
 
                     var innerG = me.svg.append("svg:g")
-                        .attr("class","logo")
+                        .attr("class",classString)
                         .attr("transform",
                             "translate(" + (coords[0] - size/2) + "," + (coords[1] - size/2) + ")"
                         );
 
-                    innerG.append("image")
+                    var img = innerG.append("image")
                         .attr("xlink:href", src)
                         .attr("width", size)
                         .attr("height", size);
                     
                     innerG.append("svg:title").text(title);
+
+                    return img;
                 }
             }
         

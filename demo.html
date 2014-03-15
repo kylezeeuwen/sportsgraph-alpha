@@ -62,7 +62,8 @@
     <div id="main_content_wrap" class="outer">
       <sportsgraph
         id="sportsgraph"
-        have-data="haveData"
+        go="go"
+        on-init="startSimulation()"
         show-rookies="showRookies"
         show-retirees="showRetirees"
         current-year="currentYear"
@@ -78,5 +79,6 @@
     <script type="text/javascript" src="js/leagueDataService.js"></script>
     <script type="text/javascript" src="js/outerController.js"></script>
     <script type="text/javascript" src="js/sportsGraphDirective.js"></script>
+    <script type="text/javascript" src="js/modalController.js"></script>
   </body>
 </html>

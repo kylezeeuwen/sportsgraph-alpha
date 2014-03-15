@@ -25,6 +25,7 @@ angular.module('leagueDataService', []).factory('league', function ($http) {
 
         $http.get(me.dataSource)
             .success(function (data, status, headers, config) {
+                if (globals.debugF) { console.log("league got data"); }
                 me.leagueData = data;
                 me.haveData(true);
                 me.loadingData(false);
