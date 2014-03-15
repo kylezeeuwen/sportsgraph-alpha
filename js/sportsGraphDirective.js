@@ -56,7 +56,7 @@ angular.module("sportsGraphDirective", []).directive(
                 // 2) once we have league, map data, and static images loaded
                 //    we are ready, but wait for external signal to begin 
                 me.$watch('haveData && haveMap && logosLoaded', function (n) {
-                    if (true || globals.debugF) { 
+                    if (globals.debugF) { 
                         console.log(
                             "graph haveData(" + me.haveData + 
                             ") + haveMap(" + me.haveMap + 
@@ -74,7 +74,7 @@ angular.module("sportsGraphDirective", []).directive(
 
                 // 3) If we are ready, When we get the signal to go, then go
                 me.$watch('ready && go', function (n) {
-                    if (true || globals.debugF) { 
+                    if (globals.debugF) { 
                         console.log(
                             "ready(" + me.ready + ") + go(" + me.go + ") called"
                         ); 
@@ -357,7 +357,7 @@ angular.module("sportsGraphDirective", []).directive(
                             //set logosLoaded when all logos are loaded.
                             img.attr('onload', function() {
                                 me.loadedLogosCount++;
-                                if (true || globals.debugF) { 
+                                if (globals.debugF) { 
                                     console.log( 
                                         "In image onload, total is ", 
                                         me.loadedLogosCount

@@ -17,6 +17,8 @@ var globals = {
         //league : 'data/league.121record.json' // this one is really just for isolating bugs
         //league : 'data/league.test.json' // Fake Mini set for testing
     },
+    //svg image onload does not seem to be accurate, so ...
+    initialLoadDelay: 3000, // pause for X milliseconds to allow image load
     transitionDelay: 700, // pause for X milliseconds between seasons
     start : { // All the rookies will start from this location
         "image" : "images/cradle.png",
