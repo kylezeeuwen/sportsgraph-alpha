@@ -12,14 +12,28 @@ function outerController($scope, $timeout, $modal, league) {
     $scope.startSimulation = function() {
         if (globals.debugF) { console.log("In outerController startSimulation"); }
 
+        // on github.io I am seeing a delay while 
+        // images are loading. I attempt to address this by hooking
+        // SVGImageElement.onload, but it appears that these
+        // events fire before the image is actually loaded.
+        // Until this is resolved add an artificial delay at begin of sim.
         var delay = 0;
         if (typeof(globals.initialLoadDelay) != 'undefined') {
             delay = globals.initialLoadDelay;
         }
         $timeout(function() {
             $scope.go = true;
+            //XXX: TODO Modals not ready yet
             //$scope.loading.close();
         }, delay);
+    };
+
+    $scope.endSimulation = function() {
+      //XXX: TODO Modals not ready yet
+      //$scope.finished = $modal.open({
+      //    template: '<img src="images/fin_500.jpg"></img>',
+      //    backdrop: false
+      //});
     };
   
     $scope.displayLoading = function () {

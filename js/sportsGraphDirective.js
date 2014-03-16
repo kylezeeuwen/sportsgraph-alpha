@@ -5,6 +5,7 @@ angular.module("sportsGraphDirective", []).directive(
             restrict: 'E',
             scope : {
                 initCallBack: '&onInit',
+                finishCallBack: '&onFinish',
                 go: '=',
                 currentYear: '=',
                 currentSpeed: '=',
@@ -289,6 +290,9 @@ angular.module("sportsGraphDirective", []).directive(
                             $timeout(function() {
                                 me.currentYear = nextSeason;
                             }, delay);
+                        }
+                        else {
+                            me.finishCallBack();
                         }
                     }
                     else {
